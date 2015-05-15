@@ -1,0 +1,5 @@
+
+
+cdsgit_path = "../"
+setShellEnvVar( strcat("CDSGIT_PATH=" cdsgit_path) )
+loadi( strcat(cdsgit_path "/load_cdsgit.il") )
