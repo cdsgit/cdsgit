@@ -1,0 +1,45 @@
+
+procedure( CGciwMenu()
+
+   ciwMenuInit()
+
+   hiCreateMenu(
+         'cdsgitMenu
+         "CdsGit"
+         list(
+            hiCreateMenuItem(?name 'gititem1 ?itemText "Register"             ?callback "CGregisterForm()")
+         )
+   )
+
+  ; if old menu is already on banner, remove it before adding new one
+   menus = hiGetBannerMenus( hiGetCIWindow() )
+   alreadyOnBanner = nil
+
+   ismember=member('cdsgitMenu menus)
+   if(length(ismember) > 0 then
+     alreadyOnBanner = t
+     menuPosition=hiGetNumMenus(hiGetCIWindow())-length(ismember)
+   )
+
+   if( alreadyOnBanner == t
+    then
+      hiDeleteBannerMenu( hiGetCIWindow() menuPosition )
+   )
+
+   ismember=member('gitMenu menus)
+   if(length(ismember) > 0 then
+     alreadyOnBanner = t
+     menuPosition=hiGetNumMenus(hiGetCIWindow())-length(ismember)
+   )
+
+   if( alreadyOnBanner == t
+    then
+      hiDeleteBannerMenu( hiGetCIWindow() menuPosition )
+   )
+
+   numMenus = hiGetNumMenus( hiGetCIWindow() )
+   hiInsertBannerMenu( hiGetCIWindow() 'cdsgitMenu numMenus )
+
+)
+
+CGciwMenu()

@@ -1,0 +1,206 @@
+
+/*
+Cadence Library Manager User Guide
+Customizing the Library Manager
+
+Cadence Application Infrastructure SKILL Reference
+Library Manager SKILL Functions
+
+TODO: Choose default gui client (git-gui, git-cola)
+
+load("/home/acook/git/lcbu-skill/scripts/git/LCBUgitLibMenus.il
+
+*/
+
+
+;Remove existing Design Manager
+lmgrManageMenuItems(list("designCascade") nil)
+
+;Create a Git Menu
+lmgrCreateMenu("gitMenu" '( ("label" "CdsGit") ("mapCallback" ("CGlmgrState")) )  )
+lmgrCreateMenu("popup" '(("mapCallback" ("CGlmgrState"))))
+
+lmgrAddMenuItems("" "" '("gitMenu"))
+
+
+
+lmgrCreateMenuItem("CGMseparator1"   "separator" '( ("callback" ("")) ) )
+lmgrCreateMenuItem("CGMseparator2"   "separator" '( ("callback" ("")) ) )
+lmgrCreateMenuItem("CGMseparator3"   "separator" '( ("callback" ("")) ) )
+lmgrCreateMenuItem("CGMseparator4"   "separator" '( ("callback" ("")) ) )
+
+lmgrCreateMenuItem("CGMgui"       "simple"  '( ("label" "Git-Gui")          ("callback" ("CGMlmgrCB")) ) )
+
+lmgrCreateMenuItem("CGMinit"      "simple"  '( ("label" "Init")               ("callback" ("CGMlmgrCB")) ) )
+lmgrCreateMenuItem("CGMstatusAll" "simple"  '( ("label" "List Repositories")  ("callback" ("CGMlmgrCB")) ) )
+lmgrCreateMenuItem("CGMclone"     "simple"  '( ("label" "Clone")              ("callback" ("CGMlmgrCB")) ) )
+lmgrCreateMenuItem("CGMsetupSSH"  "simple"  '( ("label" "Setup/Show SSH")     ("callback" ("CGMlmgrCB")) ) )
+
+
+lmgrCreateMenu("gitMenuRemote" '(("label" "Remote")) )
+   lmgrCreateMenuItem("CGMreSet"       "simple"  '( ("label" "Set")              ("callback" ("CGMlmgrCB")) ) )
+   lmgrCreateMenuItem("CGMreFetch"     "simple"  '( ("label" "Fetch")            ("callback" ("CGMlmgrCB")) ) )
+   lmgrCreateMenuItem("CGMrePull"      "simple"  '( ("label" "Pull")             ("callback" ("CGMlmgrCB")) ) )
+   lmgrCreateMenuItem("CGMrePush"      "simple"  '( ("label" "Push")             ("callback" ("CGMlmgrCB")) ) )
+
+
+lmgrCreateMenu("gitMenuBranch" '(("label" "Branch")) )
+   lmgrCreateMenuItem("CGMbrCreate"     "simple"  '( ("label" "Create")            ("callback" ("CGMlmgrCB")) ) )
+   lmgrCreateMenuItem("CGMbrCheckout"   "simple"  '( ("label" "Checkout")          ("callback" ("CGMlmgrCB")) ) )
+   lmgrCreateMenuItem("CGMbrRename"     "simple"  '( ("label" "Rename")            ("callback" ("CGMlmgrCB")) ) )
+   lmgrCreateMenuItem("CGMbrDelete"     "simple"  '( ("label" "Delete")            ("callback" ("CGMlmgrCB")) ) )
+   lmgrCreateMenuItem("CGMbrReset"      "simple"  '( ("label" "Reset")             ("callback" ("CGMlmgrCB")) ) )
+
+lmgrCreateMenu("gitMenuMerge" '(("label" "Merge")) )
+   lmgrCreateMenuItem("CGMmrMerge"      "simple"  '( ("label" "Local Merge")             ("callback" ("CGMlmgrCB")) ) )
+   lmgrCreateMenuItem("CGMmrMergeAbort" "simple"  '( ("label" "Abort Merge")             ("callback" ("CGMlmgrCB")) ) )
+
+
+lmgrCreateMenuItem("CGMstatus"    "simple"  '( ("label" "Status")           ("callback" ("CGMlmgrCB")) ) )
+lmgrCreateMenuItem("CGMexport"    "simple"  '( ("label" "Export")           ("callback" ("CGMlmgrCB")) ) )
+lmgrCreateMenuItem("CGMcheckout"  "simple"  '( ("label" "Checkout")         ("callback" ("CGMlmgrCB")) ) )
+lmgrCreateMenuItem("CGMdiff"      "simple"  '( ("label" "Diff")             ("callback" ("CGMlmgrCB")) ) )
+
+lmgrCreateMenuItem("CGMadd"       "simple"  '( ("label" "Add")               ("callback" ("CGMlmgrCB")) ) )
+lmgrCreateMenuItem("CGMreset"     "simple"  '( ("label" "Reset")             ("callback" ("CGMlmgrCB")) ) )
+lmgrCreateMenuItem("CGMcommit"    "simple"  '( ("label" "Commit")            ("callback" ("CGMlmgrCB")) ) )
+lmgrCreateMenuItem("CGMdiscard"   "simple"  '( ("label" "Discard Unstaged")  ("callback" ("CGMlmgrCB")) ) )
+
+
+lmgrCreateMenu("gitMenuPreferences" '(("label" "Preferences")) )
+   lmgrCreateMenuItem("CGMprRepo"      "simple"  '( ("label" "git config-Repository")       ("callback" ("CGMlmgrCB")) ) )
+   lmgrCreateMenuItem("CGMprUser"      "simple"  '( ("label" "git config-User")             ("callback" ("CGMlmgrCB")) ) )
+   lmgrCreateMenuItem("CGMprSystem"    "simple"  '( ("label" "git config-System")           ("callback" ("CGMlmgrCB")) ) )
+
+
+
+
+
+
+
+
+lmgrAddMenuItems("gitMenu" "LCVlct" list("CGMseparator1"   ) )
+
+lmgrAddMenuItems("gitMenu" "LCVlct" list("CGMgui"          ) )
+
+lmgrAddMenuItems("gitMenu" ""       list("CGMseparator2"   ) )
+
+lmgrAddMenuItems("gitMenu" ""       list("CGMinit"         ) )
+lmgrAddMenuItems("gitMenu" ""       list("CGMstatusAll"    ) )
+lmgrAddMenuItems("gitMenu" ""       list("CGMclone"        ) )
+lmgrAddMenuItems("gitMenu" ""       list("CGMsetupSSH"     ) )
+
+lmgrAddMenuItems("gitMenu" "LCV"    list("CGMseparator3"   ) )
+
+lmgrAddMenuItems("gitMenu" ""       list("gitMenuBranch"     ) )
+   lmgrAddMenuItems("gitMenuBranch" ""       list("CGMbrCreate"     ) )
+   lmgrAddMenuItems("gitMenuBranch" ""       list("CGMbrCheckout"   ) )
+   lmgrAddMenuItems("gitMenuBranch" ""       list("CGMbrRename"     ) )
+   lmgrAddMenuItems("gitMenuBranch" ""       list("CGMbrDelete"     ) )
+   lmgrAddMenuItems("gitMenuBranch" ""       list("CGMbrReset"      ) )
+
+lmgrAddMenuItems("gitMenu" ""       list("gitMenuMerge"     ) )
+   lmgrAddMenuItems("gitMenuMerge" ""       list("CGMmrMerge"      ) )
+   lmgrAddMenuItems("gitMenuMerge" ""       list("CGMmrMergeAbort" ) )
+
+lmgrAddMenuItems("gitMenu" ""       list("gitMenuRemote"     ) )
+   lmgrAddMenuItems("gitMenuRemote" ""       list("CGMreSet"       ) )
+   lmgrAddMenuItems("gitMenuRemote" ""       list("CGMreFetch"     ) )
+   lmgrAddMenuItems("gitMenuRemote" ""       list("CGMrePull"      ) )
+   lmgrAddMenuItems("gitMenuRemote" ""       list("CGMrePush"      ) )
+
+lmgrAddMenuItems("gitMenu" "LCV"    list("CGMseparator4"   ) )
+
+
+lmgrAddMenuItems("gitMenu" "LCV"    list("CGMadd"          ) )
+lmgrAddMenuItems("gitMenu" "LCV"    list("CGMreset"        ) )
+lmgrAddMenuItems("gitMenu" "LCV"    list("CGMcommit"       ) )
+lmgrAddMenuItems("gitMenu" "LCV"    list("CGMdiscard"      ) )
+lmgrAddMenuItems("gitMenu" "LCV"    list("CGMstatus"       ) )
+lmgrAddMenuItems("gitMenu" "LCV"    list("CGMdiff"         ) )
+lmgrAddMenuItems("gitMenu" "LCV"    list("CGMcheckout"     ) )
+lmgrAddMenuItems("gitMenu" "LCV"    list("CGMexport"       ) )
+
+
+lmgrAddMenuItems("gitMenu" ""       list("gitMenuPreferences"     ) )
+   lmgrAddMenuItems("gitMenuPreferences" ""       list("CGMprRepo"       ) )
+   lmgrAddMenuItems("gitMenuPreferences" ""       list("CGMprUser"       ) )
+   lmgrAddMenuItems("gitMenuPreferences" ""       list("CGMprSystem"       ) )
+
+
+
+/*
+; create the toggle button
+lmgrCreateMenuItem("ToggleExample" "toggle"
+'(("label" "Toggle Example")
+("callback" ("abToggleExample"))
+)
+)
+
+; create a new pull-down menu, to contain the toggle example
+lmgrCreateMenu("GUIcascade" '(("label" "GUI Objects")))
+
+; Add the toggle example into the new pull-down menu
+lmgrAddMenuItems("GUIcascade" "" '("ToggleExample"))
+
+; Add the new pull-down menu into the menu banner
+lmgrAddMenuItems("menuBar" "" '("GUIcascade"))
+
+; Create Three radio options
+lmgrCreateMenuItem("RadioOption1" "radio"
+'(("label" "Option 1")
+("callback" ("abRadioExample"))
+)
+)
+lmgrCreateMenuItem("RadioOption2" "radio"
+'(("label" "Option 2")
+("callback" ("abRadioExample"))
+)
+)
+lmgrCreateMenuItem("RadioOption3" "radio"
+'(("label" "Option 3")
+("callback" ("abRadioExample"))
+)
+)
+
+; Create a pull-down to contain the three radio options
+lmgrCreateMenu("RadioPulldown" '(("label" "Radio Pulldown")))
+; Add the radio options to the pull-down. Note that radio options must
+; be in their own submenu
+lmgrAddMenuItems("RadioPulldown" "" '("RadioOption1" "RadioOption2"
+"RadioOption3"))
+
+lmgrAddMenuItems("GUIcascade" "" '("RadioPulldown"))
+*/
+
+
+/* Submenu example
+lmgrCreateMenu("gitMenuMain" '(("label" "Repository")) )
+lmgrAddMenuItems("gitMenu" "" '("gitMenuMain"))
+
+Example 5: Dynamically Sensitizing Menu Items in a Design Management Workarea
+In this particular example, the capabilities of the function shown in Example 1 are extended so that certain menus can be sensitized within a design management workarea, based on whether the library currently selected is managed or not.
+
+When either the pop-up menu is selected or the design manager pull-down menu is selected, the specified map callback is started in Virtuoso. This then sensitizes the menu items from examples 2 and 3 depending on whether the selected library is under DM control or not. It is vital for this kind of pre-map callback to be fast so that it can make the modification prior to the menu being displayed without blocking the window system.
+
+1.  Add the following code to the cdsLibMgr.il file:
+
+lmgrCreateMenu("popup" '(("mapCallback" ("abPopupCallback"))))
+lmgrCreateMenu("designCascade" '(("mapCallback" ("abPopupCallback"))))
+2.  Define the following function in Virtuoso:
+
+* *
+* abPopupCallback(_menuName lib _c _v _f _cat) *
+* *
+* pre-map callback to be started from either pop-up or design manager *
+* pull-down. This sensitizes two of the menu items based on whether *
+* this library is DM managed or not. *
+* *
+
+procedure( abPopupCallback(_menuName lib _c _v _f _cat)
+lmgrSensitizeMenuItems('("ShowAllCheckOuts" "ShowUpdates")
+    lib!="" && ddAmUsingDM(ddGetObj(lib)))
+    t
+    )
+
+*/

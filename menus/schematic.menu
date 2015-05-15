@@ -1,0 +1,44 @@
+
+/*
+Main Virtuoso Menu
+*/
+
+
+procedure( createCdsGitSchMenu()
+   hiCreatePulldownMenu(
+      'CdsGitSchMenu
+      "CdsGit"
+      list(
+         hiCreateMenuItem(?name 'item1 ?itemText "Git Gui"          ?callback "CGMlmgrCBcv( \"CGMgui\"      )" )
+         hiCreateSeparatorMenuItem(?name 'itemd1)
+         hiCreateMenuItem(?name 'item2 ?itemText "Add"              ?callback "CGMlmgrCBcv( \"CGMadd\"      )" )
+         hiCreateMenuItem(?name 'item3 ?itemText "Reset"            ?callback "CGMlmgrCBcv( \"CGMreset\"    )" )
+         hiCreateMenuItem(?name 'item4 ?itemText "Commit"           ?callback "CGMlmgrCBcv( \"CGMcommit\"   )" )
+         hiCreateMenuItem(?name 'item5 ?itemText "Discard Unstaged" ?callback "CGMlmgrCBcv( \"CGMdiscard \" )" )
+         hiCreateMenuItem(?name 'item6 ?itemText "Status"           ?callback "CGMlmgrCBcv( \"CGMstatus\"   )" )
+         hiCreateMenuItem(?name 'item7 ?itemText "Diff"             ?callback "CGMlmgrCBcv( \"CGMdiff\"     )" )
+         hiCreateMenuItem(?name 'item8 ?itemText "Checkout"         ?callback "CGMlmgrCBcv( \"CGMcheckout\" )" )
+         hiCreateMenuItem(?name 'item9 ?itemText "Export"           ?callback "CGMlmgrCBcv( \"CGMexport\"   )" )
+      )
+   )
+);
+
+
+
+/*
+Not needed (yet)
+
+
+         hiCreateSliderMenuItem(
+            ?name 'CdsGitSliderMenu1
+            ?itemText "Branch"
+            ?subMenu
+               hiCreatePulldownMenu(
+                  'submenu ""
+                  list(
+                     hiCreateMenuItem(?name 'item1 ?itemText "Athena Home" ?callback "system(\"firefox 198.151.154.39:3000/oceanscriptgen/make &\")" )
+                     hiCreateMenuItem(?name 'item2 ?itemText "RC_FILT"     ?callback "system(\"firefox file:/home/linear/cadence_menu/javascript/rcfilter.html &\")" )
+                  );submenu1_list
+               );hiCreatePulldownMenu
+         );hiCreateSliderMenuItem
+*/
