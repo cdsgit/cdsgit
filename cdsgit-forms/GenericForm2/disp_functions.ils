@@ -1,0 +1,28 @@
+/*
+Functions for displaying information
+*/
+
+;Returns a string with the current cellView info
+defmethod( CvInfo (( f GenericForm2 ))
+   pathStr =  strcat("Lib: " f->libName " Cell: " f->cellName " View: " f->viewName)
+   pathStr
+)
+
+;Returns a string with the current count info
+defmethod( CountInfo (( f GenericForm2 ))
+   countStr = sprintf(nil "%d of %d" f->cvCountIndex  f->cvCount )
+   countStr
+)
+;Prints a warning to the ciw and logFile
+defmethod( Print (( f GenericForm2 ) str )
+   fprintf( f->logFile str)
+   printf(str)
+
+)
+
+;Prints a warning to the ciw and logFile
+defmethod( Warn (( f GenericForm2 ) str )
+   warn(str)
+   fprintf(f->logFile str)
+)
+

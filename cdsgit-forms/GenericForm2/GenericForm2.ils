@@ -1,0 +1,66 @@
+/*
+
+load(strcat(lcbu_path "/scripts/generic_form2/GenericForm2.ils"))
+
+*/
+
+
+defclass( GenericForm2
+
+   () ;; superclass
+   (
+      ;Form Variables
+      (theForm  @initform nil)     ;Container for the form
+      (formVar  @initarg formVar)  ;Global variable for the form object
+      (title    @initarg title)    ;Form title
+      (callback @initform nil)     ;callback to run
+      (fields   @initform nil)     ;Fields for the form
+      (dryRun   @initarg dryRun)   ;Does the callback support dry run
+
+      ;Loging
+      (logFile     @initarg logFile)
+      (logFilePath @initarg logFilePath)
+
+      ;Database
+      (cv         @initform nil)   ; Cell view db object
+      (dd         @initform nil)   ; Cell view dd object
+      (cvList     @initform list()); List of cells
+      (cvHierList @initform list()); List of cells for hierarchy recursion
+      (cvCount      @initform 0) ;Cell view count (total)
+      (cvCountIndex @initform 1) ;Cell view count (index)
+      (libName  @initform nil)
+      (cellName @initform nil)
+      (viewName @initform nil)
+      (viewList @initform nil) ;List of views to use
+      (returnModified @initform t)   ;Does the callback return if the cell was modified
+      (fileMode       @initform nil) ;Open file mode
+      (skipLibs       @initform nil) ;Libraries to skip
+      (incLibs        @initform nil) ;Libraries to include
+
+
+   )
+
+)
+
+
+procedure( makeGenericForm(formClassName formVarName @key (title "Generic Form") (dryRun t))
+
+   evalstring(strcat( "importSkillVar(" formVarName ")" ) )
+   importSkillVar(genericForm2)
+
+   ;Open the log file
+   rexCompile(" ")
+   logFileName = rexReplace(title "" 0)
+   logFilePath  = simplifyFilename(strcat(getWorkingDir() "/" logFileName ".txt"))
+
+   genericForm2 = makeInstance( formClassName
+      ?formVar     formVarName
+      ?title       strcat("GF2 " title)
+      ?logFilePath logFilePath
+      ?dryRun      dryRun
+   )
+
+   evalstring(strcat(formVarName " = Build(genericForm2)"))
+)
+
+

@@ -1,0 +1,226 @@
+;###############################################################################
+/*
+
+Database related functions to support GenericForm2 class
+
+2014
+Aaron Cook
+
+3-space tab's
+
+*/
+
+
+;###############################################################################
+;Run the callback on the current cell
+defmethod( RunCellCB (( f GenericForm2 ))
+
+   libName  = f->libName
+   cellName = f->cellName
+   viewName = f->viewName
+
+   pathStr =  CvInfo(f)
+
+   ;Open dd object to check file permissions
+   dd = GetDd(f)
+
+   if( dd then
+
+      ;Determine if the db is writable
+      isWriteable = ddIsObjWritable(dd)
+      if(isWriteable || (f->fileMode == "r") then
+
+         Print(f strcat( "Cell " CountInfo(f) " " pathStr "\n") )
+
+         ;Always open in read. Let the callback choose when open for write using f.OpenCv
+         f->cv = dbOpenCellViewByType(libName cellName viewName nil "r")
+
+         if(f->cv then
+
+            ;Old style pass cv to a callback
+            if(f->callback then
+               evalstring(strcat(f->callback "(f->cv)"))
+            ;New syle oop callback. Use class inheritance
+            else
+               CallBack(f)
+            )
+            CloseCv(f)
+         else
+            Warn(f strcat("Warning: dbOpen Could not open " pathStr " for read\n"))
+         )
+      else
+         Warn(f strcat("\tWarning: cell not writable ddIsObjWritable " pathStr "\n"))
+      );
+   );
+)
+
+;###############################################################################
+;Callback to be defined by a sub-class
+defmethod( CallBack (( f GenericForm2 ))
+   error("CallBack method should be defined in a sub-class of GenericForm2")
+)
+
+
+;###############################################################################
+;Open the db if not open and in write mode
+defmethod( OpenCv (( f GenericForm2 ))
+   if( f->fileMode == "a" && f->cv->mode == "r" then
+      ;dbReopen did not work, purges the indentifier to all instances
+      ;dbReopen(f->cv "a")
+      f->cv = dbOpenCellViewByType(f->libName f->cellName f->viewName nil "a")
+   )
+)
+;###############################################################################
+;Get the dd object
+defmethod( GetDd (( f GenericForm2 ))
+   f->dd = ddGetObj(f->libName f->cellName f->viewName)
+   f->dd
+)
+
+;###############################################################################
+;Close the Cell if open
+defmethod( CloseCv (( f GenericForm2 ))
+   cv = f->cv
+   ;Save and close if modified
+   if( cv && f->fileMode == "a" && f->cv->mode == "a" && cv->modifiedButNotSaved then
+      errset(schCheck(cv)) ;Ignore errors if it is not a schematic
+      dbCheck(cv)
+      dbSave(cv)
+      dbClose(cv)
+   )
+   ;Close if read only
+   if( cv && f->cv->mode == "r" then
+      dbClose(cv)
+   )
+)
+;###############################################################################
+;Add cell view to list
+defmethod( AddCv (( f GenericForm2 ))
+   f->cvCount = f->cvCount+1
+   f->cvList = cons( list(f->libName f->cellName f->viewName) f->cvList)
+)
+;###############################################################################
+;Clear all stored information
+defmethod( ClearCv (( f GenericForm2 ))
+   f->cvCount = 0
+   f->cvCountIndex = 1
+   f->cvList = list()
+   f->cvHierList = list()
+   f->cv = nil
+)
+;###############################################################################
+;Remove cell view list
+defmethod( FilterCvList (( f GenericForm2 ))
+
+   Print(f "FilterCvList: Applying library filters\n")
+
+   if( f->skipLibs then
+      ;Return only libs that do not match skipLibs list
+      f->cvList = setof( cv f->cvList null(member(car(cv) f->skipLibs)) )
+   )
+
+   if( f->incLibs then
+      ;Find libnames that match incLibs list
+      f->cvList = setof( cv f->cvList !null(member(car(cv) f->incLibs)) )
+   )
+
+   f->cvCount = length(f->cvList)
+
+   Print(f sprintf(nil "FilterCvList: Filter complete. Cell count is %d\n" f->cvCount))
+
+)
+;###############################################################################
+defmethod( RunCvList (( f GenericForm2 ))
+
+   Print(f "\nRunCvList: Running script on list of cellviews\n\n")
+
+   f->cvCountIndex = 1
+   foreach(cv f->cvList
+      f->libName = nthelem(1 cv)
+      f->cellName = nthelem(2 cv)
+      f->viewName = nthelem(3 cv)
+      RunCellCB(f)
+      f->cvCountIndex = f->cvCountIndex+1
+   )
+)
+;###############################################################################
+;Run on a single Cell
+defmethod( RunOnCell (( f GenericForm2 ))
+   f->cvCount = 1
+   RunCellCB(f)
+)
+
+;###############################################################################
+;Run on a library
+defmethod( RunOnLib (( f GenericForm2 ))
+
+   println("RunOnLib")
+
+   libId = ddGetObj(f->libName)
+   cellTotal = length(libId->cells)
+   allViews = libId~>cells~>views
+   allViews = foreach(mapcan x allViews x); Flatten the list
+
+   ;Find all matching views
+   matchedViews = setof(view allViews !null(member(view->name f->viewList)) )
+
+   ;Append the view to the list
+   foreach( view matchedViews
+      f->libName  = view->lib->name
+      f->cellName = view->cell->name
+      f->viewName = view->name
+      AddCv(f)
+   )
+
+   FilterCvList(f)
+
+   RunCvList(f)
+)
+
+;###############################################################################
+;Run on a hierarchy
+defmethod( RunOnHier (( f GenericForm2 ))
+
+   Print(f "RunOnHier\n")
+   if( ddGetObj(f->libName f->cellName f->viewName) then
+      Print(f strcat("RunOnHier: Parsing Hiearchy of " CvInfo(f) "\n"))
+      f->cv = dbOpenCellViewByType(f->libName f->cellName f->viewName nil "r")
+      BuildHier(f)
+      Print(f sprintf(nil "RunOnHier: Hiearchy sucessfully parsed. Found %d cells\n" f->cvCount))
+   else
+      error(strcat("RunOnHier: Could not find " CvInfo(f)))
+   );if
+
+   FilterCvList(f)
+
+   RunCvList(f)
+)
+
+;###############################################################################
+;# recursive schematic list building function                                  #
+defmethod( BuildHier (( f GenericForm2 ))
+
+   foreach(inst f->cv~>instances
+
+      ;Check if the instance has valid views
+      ;view is a dd object
+      dd = inst~>master~>cell; dd object
+      validViews = setof(view dd~>views member(view->name f->viewList))
+
+      ;For each valid view iterate finding sub-instances and views
+      foreach(view validViews
+         isNotMember = !member(view f->cvHierList)
+         if( isNotMember  then
+            f->cvHierList = cons( view f->cvHierList)
+            f->libName  = view->lib->name
+            f->cellName = view->cell->name
+            f->viewName = view->name
+            AddCv(f)
+            f->cv = dbOpenCellViewByType(f->libName f->cellName f->viewName nil "r")
+            f->cvHierList = BuildHier(f)
+
+         );if
+      )
+   );foreach
+   f->cvHierList
+);

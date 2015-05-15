@@ -1,0 +1,212 @@
+;###############################################################################
+/*
+
+Form related functions to support GenericForm2 class
+
+2014
+Aaron Cook
+
+3-space tab's
+
+*/
+
+
+defmethod( Build (( f GenericForm2 ))
+
+   cv = geGetEditCellView()
+
+   ;;Get the current cell being edited if possible
+   if( cv then
+      libName  = cv->libName
+      cellName = cv->cellName
+      viewName = cv->viewName
+   else
+      libName  = ""
+      cellName = ""
+      viewName = ""
+   )
+
+
+   ;;Define form fields
+   l_title = hiCreateLabel(   ?name    'l_title
+            ?labelText       f->title
+   )
+   s_lib   = hiCreateStringField(  ?name    's_lib
+            ?prompt     "Library"
+            ?value      libName
+            ?editable   t
+   )
+   s_cell   = hiCreateStringField(  ?name    's_cell
+            ?prompt     "Cell"
+            ?value      cellName
+            ?editable   t
+   )
+   s_view   = hiCreateStringField(  ?name    's_view
+            ?prompt     "View(s)"
+            ?value      viewName
+            ?editable   t
+   )
+   s_skip   = hiCreateStringField(  ?name    's_skip
+            ?prompt     "Skip Lib(s)"
+            ?value      ""
+            ?editable   t
+   )
+   s_include   = hiCreateStringField(  ?name    's_include
+            ?prompt     "Only Libs(s)"
+            ?value      ""
+            ?editable   t
+   )
+   t_dryrun   = hiCreateToggleField(  ?name    't_dryrun
+            ?prompt     ""
+            ?choices    list(
+                           list('cChoice "Dry Run (will not make changes)")
+                        )
+            ?value      list( f->dryRun )
+            ?numSelect  1
+   )
+   r_mode  = hiCreateRadioField(   ?name    'r_mode
+            ?prompt     "Run Mode:"
+            ?choices list( "Cell View" "Library" "Hierarchically")
+   )
+   b_run =hiCreateButton(
+            ?name 'run_button
+            ?buttonText "Run"
+            ?callback strcat("Run(" f->formVar ")")
+   )
+   b_browse=hiCreateButton(
+      ?name 'browse_button
+      ?buttonText "Browse"
+      ?callback strcat("Sync(" f->formVar ")")
+   )
+
+
+   ;TODO FIELD RESIZING
+   ;The fields of a form created by hiCreateAppForm does not scale correctly when the form is resized
+   ;11182478
+   ;http://support.cadence.com/wps/PA_DocumentViewer/pubs//skuiref/skuiref5.0/chap7.html#204722
+   ;http://support.cadence.com/wps/myportal/cos/COSHome/viewsolution/!ut/p/c5/dY3fckNAHEafpQ-Q-a1l2FyqXbK0KwRJ3BihFepf0W3r6SsP0PNdnvnmQArb-lzWVb7UQ5-3cIFUzxTsWIqnob1vCYI40YUXJgxtwPnx0DP0DyaCK6TGw2OsELR37OgZccvjLjFUjDwdkn6Yuq0UweVQzD90MCvKaMjX2OYycOh8LcUUtIzF4lciZWoyGWjU5EsZN5VKkDGZCdbdW6E0kgptdEL3hENr4d-0Vl_Y_e6fWHsjO_Uoo7U7fpWljWVR-d15rnYjeg-cV-Oz0EAchu4Nxo9-tYn59AfB9Med/dl3/d3/L2dBISEvZ0FBIS9nQSEh/
+
+   f->fields =
+      list(
+         list( l_title     10 :10+30*0  475:35 200 )
+         list( s_lib       10 :10+30*1  475:35 200 )
+         list( s_cell      10 :10+30*2  475:35 200 )
+         list( s_view      10 :10+30*3  475:35 200 )
+         list( s_skip      10 :10+30*4  475:35 200 )
+         list( s_include   10 :10+30*5  475:35 200 )
+         list( t_dryrun    10 :10+30*6  475:35 200 )
+         list( r_mode      10 :10+30*7  475:35 200 )
+         list( b_run       10 :10+30*8  100:50     )
+         list( b_browse    120:10+30*8  100:50     )
+      )
+
+   f
+)
+
+defmethod( Show (( f GenericForm2 ))
+
+   ;;Main Form
+   f->theForm = hiCreateAppForm( ?name evalstring(strcat("'f_" f->formVar))
+            ?formTitle  f->title
+            ?fields     f->fields
+            ?buttonLayout  'OKCancelDef
+            ?initialSize   t
+            ?callback   nil
+   );
+
+   hiDisplayForm(f->theForm)
+)
+
+;Pull the cv information from the form
+defmethod( SyncCvInfo  (( f GenericForm2 ))
+
+   f->libName   = f->theForm->s_lib->value
+	f->cellName  = f->theForm->s_cell->value
+	f->viewName  = f->theForm->s_view->value
+   f->viewList  = parseString(f -> theForm -> s_view -> value)
+   f->skipLibs  = parseString(f -> theForm -> s_skip -> value)
+   f->incLibs   = parseString(f -> theForm -> s_include -> value)
+)
+
+
+defmethod( Run (( f GenericForm2 ))
+
+
+   f->logFile = outfile(logFilePath "w")              ;; open output log file
+   f->fileMode
+
+   modeValue = f -> theForm -> r_mode -> value
+   dryrunValue = car(f -> theForm -> t_dryrun -> value)
+
+   SyncCvInfo(f)
+   ClearCv(f)
+
+   if( dryrunValue then
+      f->fileMode = "r"
+   else
+      f->fileMode = "a"
+   )
+
+   fprintf(f->logFile "********** Log File from %s at %s **********\n" f->title getCurrentTime() )
+   fprintf(f->logFile "********** %s **********\n" f->logFilePath)
+
+   Print(f strcat("Starting " f->title "\n"))
+
+   foreach(viewName f->viewList
+      case(modeValue
+         ("Cell View"
+            RunOnCell(f)
+         )
+         ("Library"
+            RunOnLib(f)
+         )
+         ("Hierarchically"
+            RunOnHier(f)
+         )
+         (t
+            error("Invalid Run Mode....code bug, selections are probably wrong")
+         )
+
+      ); case
+   );foreach
+
+   close(f->logFile)
+   system(strcat("nedit " f->logFilePath "&")) ;View the log file
+
+)
+
+defmethod( Sync (( f GenericForm2 ))
+   ddsSyncWithForm(
+       f->theForm
+       'browse
+       's_lib
+       's_cell
+       's_view
+   )
+)
+
+
+;##################################################################
+;Field operations
+
+;Get a field by the symbol name
+defmethod( GetField (( f GenericForm2 ) @key (fieldNum nil))
+
+   obj = car(nthelem(fieldNum f_LCBUinhCDFgenCustom->fields ))
+   obj
+)
+
+;Replace an existing field with a new one
+defmethod( SetField (( f GenericForm2 ) @key (fieldNum nil) (newList nil))
+   ;subst(new prev list)
+   f->fields = subst( newList nthelem(fieldNum f->fields) f->fields)
+   f
+)
+
+;Append a new field
+defmethod( AddField (( f GenericForm2 ) @key (newList nil))
+   ;subst(new prev list)
+   f->fields = append(f->fields list(newList))
+   f
+)
+

@@ -1,0 +1,346 @@
+
+/*
+   Create a grid for easy form layout and resize
+   load(strcat(lcbu_path "/scripts/generic_form2/Gridder.ils"))
+
+   Grid starts at 1,1 ends at rows,cols
+
+*/
+
+defclass( Gridder
+
+   () ;; superclass
+   (
+      (fields         @initform nil @initarg fields); List for the fields in the form
+      (attachmentList @initform nil @initarg attachmentList); List for the field attachments in the form
+
+      (height @initform 30  @initarg height); Hieght of a single grid
+      (width  @initform 100 @initarg width); Width of a single grid
+      (rows   @initform 0 ); Grid rows
+      (cols   @initform 0 ); Grid cols for determining form size
+
+      (border  @initform 10  @initarg border); border around grid
+      (spacing @initform 10 @initarg spacing); spacing between grid cells
+
+      (size @initform nil)
+
+      (xfudge @initform 30) ; Fudge factor for the x size of cadence buttons
+      (ymin   @initform 200); Min size to accomidate cadence buttoms
+
+      (verbose @initform nil) ;Display info
+
+      ;Private
+      (lastx @initform nil); The last NewField x
+      (lasty @initform nil); The last NewField y
+      (lastw @initform nil); The last NewField w
+      (lasth @initform nil); The last NewField h
+   )
+)
+
+
+
+procedure( Gridder( @key (verbose nil))
+let(
+   (grid)
+   grid = makeInstance('Gridder)
+   grid->verbose = verbose
+   grid
+);let
+)
+
+/*
+NewField(Gridder)
+   field:
+      The field to be added
+   x:
+      xposition in grid units
+   y:
+      yposition in grid units
+   w:
+      width in grid units
+   h:
+      height in grid units
+   prompt:
+      prompt offset in pixels
+   attach:
+      Automatic resize for the attachmentList of a form
+      "scale" (default) - scale field with the form
+      "fix" - fix the ul and scale the rb
+      "position" - fix all positions
+      Custom inputs are also allowed, see section in cadence documentation about field attachements
+   expand:
+      Expand the field in pixels
+      list(x y) - expands left and right by x pixes, top and bottom by y pixels
+      list(x y w h) expands left by x, top by y, right by w, bottom by h
+
+Special NewField args:
+   For the following arguments, the x and y inputs are ignored
+
+   overlap:
+      Overlaps the last field. X and Y are ignored
+
+   appendField:
+      Append one unit from the last field
+   appendDir
+      Append direction
+      "x" - Append in the x direction
+      "y" - Append in the y direction
+
+Style Args
+   frame:
+      Frame the field using a frameField
+   frameLabel:
+      The label for the frameField
+   frameName
+      The name of the frameField
+   frameExpand
+      Expand the frame
+
+*/
+defmethod( NewField (( g Gridder ) @key
+   (field nil)
+   (x nil) (y nil) (w nil) (h nil)
+   (prompt nil) (attach "scale") (expand 0)
+   (overlap nil)
+   (appendField nil) (appendDir "y")
+   (frame nil) (frameLabel "") (frameName nil) (frameExpand list(5 15 5 5) )
+)
+
+   if( !field && !frame then
+      error("Gridder: You must specify the field object to add")
+   )
+
+
+   if( overlap || appendField then
+      x = g->lastx
+      y = g->lasty
+   )
+
+   if( appendField && !x && !y then
+      x = 1
+      y = 1
+      appendField = nil; Skip adding
+   )
+
+   if( appendField then
+      case( appendDir
+         ("x" x = x+g->lastw)
+         ("y" y = y+g->lasth)
+         (t error("Gridder: Can only append in x or y"))
+      )
+   )
+
+
+   ;Error checking
+   if( x < 1 then
+      error("Gridder NewField: x must be > 1")
+   )
+   if( y < 1 then
+      error("Gridder NewField: y must be > 1")
+   )
+   if( prompt then
+   if( prompt > w*g->width || prompt < 0 then
+      error("Gridder NewField: prompt size cannot exceed width and must be >= 0")
+   )
+   )
+
+   g->lastx = x
+   g->lasty = y
+   g->lastw = w
+   g->lasth = h
+
+   ;Allow expansion in the x,y,w,h directions
+   case( type(expand)
+      ( 'list
+         case( length(expand)
+            (2 ; x,y
+               expandX = nthelem(1 expand)
+               expandY = nthelem(2 expand)
+               expandW = nthelem(1 expand)
+               expandH = nthelem(2 expand)
+            )
+            (4 ; x,y,w,h
+               expandX = nthelem(1 expand)
+               expandY = nthelem(2 expand)
+               expandW = nthelem(3 expand)
+               expandH = nthelem(4 expand)
+            )
+            (t error("Gridder: expand list must be length of 2 or 4 (x,y) or (x,y,w,h)") )
+         )
+      )
+      ( 'fixnum
+         expandX=expand expandY=expand expandW=expand expandH=expand
+      )
+      ( t error("Gridder: expand must be a list or fixnum") )
+   )
+
+   ;X
+   xpos  = g->border + g->spacing*x + g->width*(x-1) - expandX
+   width = g->width * w + g->spacing*(w-1) + 2*expandW
+
+   ;Y
+   ypos   = g->border + g->spacing*y + g->height*(y-1) - expandY
+   height = g->height * h + g->spacing*(h-1) + 2*expandH
+
+   ;Update width and height
+   if(x+(w-1) > g->cols then
+      g->cols = x+(w-1)
+   )
+   if(y+(h-1) > g->rows then
+      g->rows = y+(h-1)
+   )
+
+
+
+   ;Format
+   ;list( r_fieldDescription x_xpos : x_ypos x_width : x_height [x_promptBoxWidthOrTitleHeight]
+
+   if( field then
+      if(prompt then
+         field = list( field xpos:ypos width:height prompt)
+      else
+         field = list( field xpos:ypos width:height)
+      )
+   )
+
+   ;Scaling
+   case( attach
+      ;Scale all as a percent of the form
+      ("scale"
+         attachment = inSkill(list( hicTopPercentSet|hicLeftPercentSet|
+            hicRightPercentSet|hicBottomPercentSet ))
+      )
+      ;Fix the ul and scale the rb
+      ("fix"
+         attachment = inSkill(list( hicLeftPositionSet |hicTopPositionSet|
+            hicRightPercentSet|hicBottomPercentSet ))
+      )
+      ;Fix all positions
+      ("position"
+         attachment = inSkill(list( hicLeftPositionSet |hicTopPositionSet|
+            hicRightPositionSet|hicBottomPositionSet ))
+      )
+      ;Allow custom input
+      (t
+         attachment = attach
+      )
+   );case
+
+   ;Framing
+   if(frame then
+      if( !frameName then
+         error("Gridder: Must provide a frameName when adding frame")
+      )
+
+      tmp_frame=evalstring(strcat("hiCreateFrameField( ?name '" frameName " ?labelText \"" frameLabel "\")" ))
+      NewField(g ?field tmp_frame ?x x ?y y ?w w ?h h ?prompt 0 ?attach attach ?expand frameExpand)
+   )
+
+   if( field then
+      g->fields         = append(g->fields         list(field))
+      g->attachmentList = append(g->attachmentList attachment)
+   )
+
+)
+
+;Get the size of the form
+defmethod( FormSize (( g Gridder) )
+
+   w = g->width *g->cols + (g->cols+1)*g->spacing + 2*g->border
+   h = g->height*g->rows + (g->rows+1)*g->spacing + 2*g->border + g->xfudge
+
+   if(w < g->ymin then
+      w = g->ymin
+   )
+
+   formSize = list(w h)
+
+   g->size = formSize
+
+   if(g->verbose printf("FormSize %L\n" formSize))
+
+   formSize
+
+)
+
+inSkill(
+;Simple demo
+procedure( gridder_demo()
+
+   g = Gridder()
+
+   b_run =hiCreateButton(
+            ?name 'run_button
+            ?buttonText "Run"
+            ?callback ""
+   )
+
+   ;NewField(g ?field b_run ?x 1 ?y 1 ?w 2 ?h 1 ?prompt 0 ?attach "all")
+
+   fields = list()
+   for( i 1 3
+      for(j 1 3
+
+         ename = sprintf(nil "field_%d_%d" i j)
+
+         b = hiCreateButton(
+            ?name evalstring(strcat("'" ename))
+            ?buttonText ename
+            ?callback ""
+         )
+
+         NewField(g ?field b ?x i ?y j ?w 1 ?h 1 ?prompt 0 ?attach "scale")
+
+      )
+   )
+   formSize = FormSize(g)
+
+   gridderDemoForm = hiCreateAppForm( ?name    'gridderDemoForm
+            ?formTitle  "Gridder Test"
+            ?fields     ;list(
+               g->fields
+            ;)
+            ?attachmentList g->attachmentList
+            ?buttonLayout  'OKCancelDef
+            ?initialSize   formSize
+            ?minSize formSize
+            ?callback   t
+   );
+
+   hiDisplayForm(gridderDemoForm)
+
+)
+)
+
+;gridder_demo()
+
+
+/*
+
+list( r_fieldDescription
+x_xpos : x_ypos
+x_width : x_height
+[x_promptBoxWidthOrTitleHeight] )
+
+r_fieldDescription
+Field description returned from one of the field creation routines.
+
+x_xpos Upper-left x coordinate in pixels of the field relative to the
+upper-left corner of the form.
+
+x_ypos Upper-left y coordinate in pixels of the field relative to the
+upper-left corner of the form.
+
+x_width Width of the field in pixels.
+
+x_height Height of the field in pixels.
+
+x_promptBoxWidthOrTitleHeight
+
+For fields that have a prompt and that are laid out horizontally,
+such as a string field or spin box field, this attribute is the width
+of the prompt box in pixels. For fields that have a top-down layout,
+such as the report field and the scroll region field, this attribute is
+the height of the title box in pixels
+
+*/
