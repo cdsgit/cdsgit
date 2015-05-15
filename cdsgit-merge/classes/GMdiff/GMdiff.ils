@@ -1,0 +1,198 @@
+/*
+
+load("/home/acook/git/lcbu-skill/scripts/git/merge/GMdiffClass.il")
+
+*/
+
+;============== CLASS DECLARTION ===============
+defclass( GMdiff
+   ;Inheritance
+   ()
+
+   ;Slots
+   (
+      ( id        @initarg  id  @initform GMgenerateID() ); A unique identifier
+
+      (diffPairs  @initarg  diffPairs); A reference to the parent diff pair list
+
+      ;Diff Properties
+      ( name      @initarg  name )                   ; Name of the diff object
+      ( key       @initarg  key )                    ; Key of the object in the difflist
+      ( dispName  @initform "" @initarg  dispName )  ; Display name of the object
+      ( type      @initarg  type)                    ; Diff type (pin, inst, ect)
+      ( status    @initarg  status )                 ; The diff status (new,partial)
+      ( props     @initarg  props )                  ; List of diff properties, like what matched
+
+      ;Object storage
+      ( obj       @initarg  obj )                    ; The object the diff refers to
+      ( refObj    @initarg  refObj )                 ; (partial only) The object similar to obj
+      ( genObj    @initform nil @initarg  genObj  )  ; (new only) Objects created in the dst cell
+      ( srcCv     @initarg  srcCv)                   ; Source cellview ID
+      ( dstCv     @initarg  dstCv)                   ; Source cellview ID
+      ( isDst?    @initarg  isDst?)                  ; t if the obj->cellView == dstCv
+      ( genFail   @initform nil @initarg  genFail )  ; (new only) Objects created in the dst cell
+
+      ;Parent child
+      ( children   @initform list() @initarg children )      ; The diff's child diff object (list)
+      ( isChild?   @initform nil    @initarg isChild? )      ; Is the object a child of another diff?
+      ( parent     @initarg parent )                         ; The diff's parent diff
+
+      ;GUI storage
+      ( merged    @initarg  merged   @initform nil)      ; The current state of the diff object in the form
+      ( visible   @initarg  visible @initform t)     ; Is the Diff visible in the GUI
+
+      ;Debug only
+      ( verbose   @initform  nil @initarg verbose);
+   ); slots
+
+); defClass
+
+;============== CONSTRUCTORS ===============
+
+;Rework this to Validate existing diff
+defmethod( NewDiff (( diff GMdiff) @key
+   (status nil)
+   (refObj nil)
+   (props nil)
+   (parent nil)
+)
+
+
+;Input validation
+   case( status
+      ("new"      t )
+      ("partial"  t
+         if( !refObj then
+            if( !diff->refObj then
+               error("GMdiff: partial diffs must include refObj to link to")
+            else
+               refObj = diff->refObj
+            )
+         )
+         if( !props    error("GMdiff: partial diffs must include match properties")   )
+      )
+      (t          error("GMdiff: Type must be 'new' or 'partial'") )
+   )
+
+   case(diff->type
+      ("pin"  dispName = diff->obj->net->name)
+      (t      dispName = diff->name)
+   )
+
+   ;Only allow a certian length string for the name
+   if( strlen(dispName) > 20 then
+      dispName = strncat("" dispName 20)
+      dispName = strcat(dispName "...")
+   )
+
+   diff->dispName  = dispName
+   diff->verbose   = diff->diffPairs->verbose
+   diff->srcCv     = diff->diffPairs->srcCv
+   diff->dstCv     = diff->diffPairs->dstCv
+   diff->isDst?    = eq(diff->dstCv diff->obj->cellView) && status == "new"
+   diff->status    = status
+   diff->refObj    = refObj
+   diff->props     = props
+   diff->parent    = parent
+
+   diff
+
+)
+
+;============== CLASS METHODS (Reporting) ===============
+
+defmethod( GPrint (( diff GMdiff ) )
+
+str = sprintf(nil "ID: %d Name: %s DName: %L Type: %s  Merged %L\n" diff->id diff->name diff->dispName diff->type diff->merged)
+
+);defmethod
+
+
+defmethod( Details ((diff GMdiff ) )
+
+   str = sprintf(nil "Name:%s   Type:%s   Diff Type:%s   ID:%d   " diff->name diff->type diff->status diff->id )
+
+   if( !diff->merged then
+      mergeStatus = "UNMERGED"
+   else
+      mergeStatus = "MERGED"
+   )
+
+   if(diff->verbose str = sprintf(nil "%sKey: %s\n" str diff->key) )
+
+   if(diff->verbose && diff->children then str = sprintf(nil "%sChildren:\n%s" str PrintChildren(diff "")) )
+
+   str = strcat(str sprintf(nil "MERGE STATUS: %s\n" mergeStatus))
+
+
+);defmethod
+
+defmethod( ToReport (( diff GMdiff ) @key (text "") )
+   list( diff->dispName diff->type diff->status diff)
+)
+
+;============== CLASS METHODS (UPDATE) ===============
+
+defmethod( ChangeState (( diff GMdiff ) )
+
+   if( !diff->merged then
+      ;For partial diff delete the old object
+      if(diff->status == "partial" then
+         UpdateAttr(diff)
+         ChangeChildrenState(diff)
+      else
+         if( diff->isDst? then
+            ChangeChildrenState(diff)
+            Destroy(diff)
+         else
+            Create(diff)
+            ChangeChildrenState(diff)
+         )
+      )
+   else
+      ;For a partial diff recreate the reference
+      if(diff->status == "partial" then
+         RestoreAttr(diff)
+         ChangeChildrenState(diff)
+      else
+         if( diff->isDst? then
+            Create(diff)
+            ChangeChildrenState(diff)
+         else
+            ChangeChildrenState(diff)
+            Destroy(diff)
+         )
+      )
+   )
+
+   ToggleState(diff)
+
+)
+
+defmethod( ToggleState (( diff GMdiff ) )
+   diff->merged = !diff->merged
+   if(diff->verbose printf("GMdiff Merged State %d Toggled to %L\n" diff->id diff->merged))
+)
+
+defmethod( ChangeChildrenState (( diff GMdiff ) )
+   if(!diff->genFail then
+      foreach(child diff->children
+         ChangeState(child)
+      )
+   else
+      warn("Child creation skipped, forcing toggle")
+      ToggleChildrenState(diff)
+      diff->genFail = nil
+  )
+)
+
+defmethod( ToggleChildrenState (( diff GMdiff ) )
+   ToggleState(diff)
+   foreach(child diff->children
+      ToggleChildrenState(child)
+   )
+)
+
+defmethod( Highlight (( diff GMdiff ))
+   error("GMdiff Highlight: Subclass should define this method")
+)

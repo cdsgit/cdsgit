@@ -1,0 +1,153 @@
+/*
+load("/home/acook/git/lcbu-skill/scripts/git/merge/classes/GMobj.il")
+*/
+
+;============== CLASS DECLARTION ===============
+defclass( GMnetGroup
+   ;Inheritance
+   (GMobj)
+
+   ;Slots
+   (
+      (type         @initform "net" @initarg type)
+      (attrs        @initform GMD_netGroupAttrs() )
+   ); slots
+
+); defClass
+
+procedure( GMD_netGroupAttrs()
+;(attrName attrType)
+;attrName is the attribute name (in the object)
+;attrType if mismatch:
+;  t mean hardAttrs and will result in a "new" diff
+;  nil means softAttr partial diff
+list(
+   list("name"      "hard")
+   list("diffFigs"  "soft") ; Just a placeholder for partial diff
+)
+)
+;============== INITIALIZE ===============
+
+procedure( GMD_createNets(diffPairs)
+   netsSrc = diffPairs->srcCv->signals
+   netsDst = diffPairs->dstCv->signals
+
+   ;if( !tablep(diffPairs->objsSrc) || !tablep(diffPairs->objsDst) then
+   ;   error("diffPairs objs should be tables")
+   ;)
+
+   ;if( length(diffPairs->objsSrc) >0 || length(diffPairs->objsDst) > 0 then
+   ;   error("diffPairs objs tables were not empty")
+   ;)
+
+
+   ;Filter nets that don't have any objects
+   netsSrc = setof( net netsSrc net->figs != nil)
+   netsDst = setof( net netsDst net->figs != nil)
+
+   foreach(net netsSrc
+      newNet = GMD_createNet_func(net diffPairs)
+      AddDiffObj(diffPairs ?obj newNet ?group 'objsSrc)
+   )
+   foreach(net netsDst
+      newNet = GMD_createNet_func(net diffPairs)
+      AddDiffObj(diffPairs ?obj newNet ?group 'objsDst)
+   )
+   diffPairs
+)
+
+procedure( GMD_createNet_func( net diffPairs )
+
+   name = strcat("Net " net->name)
+   newNet = makeInstance( 'GMnetGroup ?obj net ?name name ?diffPairs diffPairs )
+   FilterAttr(newNet); Sort the attributes
+   newNet
+)
+
+
+;============== CLASS METHODS (PARENT/CHILD) ===============
+defmethod( Diff (( net GMnetGroup ) netRef)
+
+   ;Search each of the instTerms instances for existing diffs
+   instTerms = append(net->obj->instTerms netRef->obj->instTerms)
+   termIndex = 1
+   matched = t
+
+
+   ;Find if any instances on the net are full diffs
+   while( matched && termIndex < length(instTerms)+1
+      term = nthelem(termIndex instTerms)
+      name = term->name
+      inst = term->inst
+
+      instDiff = FindByObj(net->diffPairs ?obj inst)
+
+      if( instDiff && instDiff->status=="new" then
+         printf("\tInstance %s is a new instance, therefore the net %s is a diff\n" instDiff->name net->name)
+         matched = list(t)
+      )
+      termIndex = termIndex + 1
+   )
+
+   matched
+
+)
+
+defmethod( RemoveDiffFigs (( net GMnetGroup ) )
+   ;Remove all figures of the net from the diff List
+   RemoveByObj(net->diffPairs ?objs net->obj->figs)
+   RemoveByObj(net->diffPairs ?objs net->refObj->figs)
+)
+
+
+defmethod( GetChildFromObj (( net GMnetGroup ) )
+   figs = net->obj->figs
+
+   if(net->status == "partial" then
+      figs = append(figs net->refObj->figs)
+   )
+
+   ;Only return figs that do not have a parent
+   ;For example a label attached to a wire
+   ;Prevents issues of redudant children
+   children = setof( fig figs fig->parent == nil)
+)
+
+
+;============== CLASS METHODS (Create) ===============
+
+defmethod( Create (( diff GMnetGroup ))
+   t
+)
+
+defmethod( Delete (( diff GMnetGroup ))
+   t
+)
+
+defmethod( UpdateAttr (( diff GMnetGroup ) @key (source nil) (target nil))
+   t
+)
+
+;============== CLASS METHODS (DISPLAY) ===============
+
+defmethod( GPrint (( net GMnetGroup ) )
+
+
+str = sprintf(nil "Name:%s\n",net->name)
+
+);defmethod
+
+
+;============== CLASS METHODS (Highlight) ===============
+
+defmethod( Highlight (( obj GMnetGroup ))
+   foreach(child obj->children
+      Highlight(child)
+   )
+)
+
+defmethod( Select (( obj GMnetGroup ) )
+   foreach(child obj->children
+      Select(child)
+   )
+)

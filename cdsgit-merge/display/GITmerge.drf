@@ -1,0 +1,24 @@
+;Define a thick line
+drDefineLineStyle(
+
+;( DisplayName LineStyle    Size  Pattern )
+
+( display          thickProbeLine      4    (1 1 1 ) )
+
+);
+
+
+;Define a new color
+drDefinePacket(
+
+;( DisplayName PacketName Stipple    LineStyle   Fill       Outline    [FillStyle])
+
+( display     gmg_0    blank  thickProbeLine  yellow        yellow        outline )
+( display     gmg_1    blank  thickProbeLine  green         green         outline )
+( display     gmg_2    blank  thickProbeLine  orange        orange        outline )
+( display     gmg_3    blank  thickProbeLine  pink          pink          outline )
+( display     gmg_4    blank  thickProbeLine  cyan          cyan          outline )
+( display     gmg_5    blank  thickProbeLine  maroon        maroon        outline )
+
+);
+

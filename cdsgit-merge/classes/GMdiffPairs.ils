@@ -1,0 +1,350 @@
+/*
+
+load("/home/acook/git/lcbu-skill/scripts/git/merge/GMdiffClass.il")
+
+*/
+
+;============== CLASS DECLARTION ===============
+
+defclass( GMdiffPairs
+   ;Inheritance
+   ()
+
+   ;Slots
+   (
+      (objsSrc     @initarg  objsSrc)
+      (objsDst     @initarg  objsDst)
+      (diffList    @initform list())
+      (dstCv       @initarg  dstCv); The destination CV
+      (srcCv       @initarg  srcCv); The source CV
+      (bckCv       @initarg  bckCv); The backup CV
+      (toChange    @initarg  toChange @initform nil);
+
+      ;Highlight Sets
+      (highlighted @initform nil @initarg highlighted)
+      (setLpps     @initform nil )
+      (hiliteSrc   @initarg  hiliteSrc)
+      (hiliteDst   @initarg  hiliteDst)
+
+      ;Options
+      (verbose @initform nil @initarg  verbose)
+      (netDiff @initform nil @initarg  netDiff)
+
+   )
+); defclass
+
+;============== CLASS METHODS (INIT/ADD) ===============
+
+defmethod( Init (( diffPairs GMdiffPairs ) )
+   diffPairs->objsSrc = makeTable("diffObj" nil)
+   diffPairs->objsDst = makeTable("diffObj" nil)
+
+   ;CreateBackup(diffPairs)
+)
+
+defmethod( Cleanup (( diffPairs GMdiffPairs ) )
+   ;DeleteBackup(diffPairs)
+)
+
+defmethod( AddDiffObj (( diffPairs GMdiffPairs ) @key (obj nil) (key nil) (group nil))
+   if(obj then
+      if(!key then
+         key = obj->name
+      )
+
+      objs = get(diffPairs group)
+
+      ;Allow for similar keys for objects of the same name
+      ;An "x" is appened
+      ;Makes the search routing for an exact match very fast
+      while( objs[key]
+         key = strcat( key "x")
+         if(diffPairs->verbose warn("A key was appened %s " obj->name))
+      )
+
+      obj->key = key
+
+      objs[key] = obj
+   )
+)
+
+;Find a diff in the diffList by object
+defmethod( FindByObj (( diffPairs GMdiffPairs ) @key (obj nil) (searchObjs nil))
+
+   diff = setof(diffItem diffPairs->diffList eq(diffItem->obj obj) || eq(diffItem->refObj obj) )
+
+   if( diff then
+      diff = car(diff)
+   )
+)
+
+;Remove a diff in the diffList by object
+defmethod( RemoveByObj (( diffPairs GMdiffPairs ) @key (objs nil))
+
+   if( type(objs) != 'list then
+      objs = list(objs)
+   )
+
+   foreach( obj objs
+      diff = setof(diffItem diffPairs->diffList eq(diffItem->obj obj))
+      if(diff then
+         diff = car(diff)
+         if( diffPairs->verbose printf("GMdiffPairs: Removing diff object %L %s\n" diff diff->name) )
+         diffPairs->diffList = remove(diff diffPairs->diffList)
+      )
+   )
+   diffPairs
+)
+
+;Add a diff
+defmethod( AddDiff (( diffPairs GMdiffPairs ) newDiff)
+   diffPairs->diffList = cons(newDiff diffPairs->diffList)
+)
+
+;============== CLASS METHODS (DIFF) ===============
+
+defmethod( DiffPairs (( diffPairs GMdiffPairs ) )
+   let( (
+         ( objsSrc diffPairs->objsSrc )
+         ( objsDst diffPairs->objsDst )
+         ( verbose diffPairs->verbose )
+         genNewDiff
+      )
+
+      ;First check for perfect match
+      foreach(objSrcKey objsSrc
+
+         objSrc = objsSrc[objSrcKey]
+
+         objDstKey = objSrcKey
+         if(verbose printf("Searching for Exact Match for %s\n" GPrint(objSrc)) )
+         matchStatus = nil
+
+         while( objsDst[objDstKey] && !matchStatus
+            objDst = objsDst[objDstKey]
+
+            if( objDst then
+
+                  matchStatus = Diff(objSrc objDst)
+
+                  if(matchStatus == t then
+                     if(verbose printf("Exact match %s\n" GPrint(objSrc)) )
+                     remove(objSrcKey objsSrc)
+                     remove(objDstKey objsDst)
+                  )
+            ); objDst
+            objDstKey = strcat(objDstKey "x") ;Next similar key
+         ); while
+
+      );foreach objSrc
+
+      ;Check for partial match
+      foreach(objSrcKey objsSrc
+
+         ;PrintTables(diffPairs)
+
+         objSrc = objsSrc[objSrcKey]
+         objDst = objsDst[objSrcKey]
+
+         if(verbose printf("Searching for Partial Match for %s\n" GPrint(objSrc)) )
+         matchStatus = nil
+
+         if( objDst then
+
+               matchStatus = Diff(objSrc objDst)
+
+               if(matchStatus != t && matchStatus != nil then
+                  if(verbose printf("Partial match %s Result: %L \n" GPrint(objSrc) matchStatus) )
+
+                  remove(objSrcKey objsSrc)
+                  remove(objSrcKey objsDst)
+
+                  ;Always add only the destination object
+                  newDiff = NewDiff(objDst
+                     ?refObj objSrc->obj
+                     ?status "partial"
+                     ?props matchStatus
+                  )
+
+                  AddDiff(diffPairs newDiff)
+
+
+               ); if partial match
+
+         );  objDst
+
+      );foreach objSrc
+
+      ;Add remaining objects to the diff
+      foreach(objTable list(objsSrc objsDst)
+         foreach(key objTable
+            newDiff = NewDiff( objTable[key]
+               ?status "new"
+                      )
+            AddDiff(diffPairs newDiff)
+            if(verbose printf("New Diff %s\n" GPrint(newDiff)) )
+            remove(key objTable)
+         )
+      )
+
+      diffPairs -> objsSrc = objsSrc
+      diffPairs -> objsDst = objsDst
+      diffPairs
+
+   );let
+)
+
+
+
+;============== CLASS METHODS (PARENT CHILD) ===============
+
+defmethod( FindChildren (( diffPairs GMdiffPairs ) @key (depth 0))
+
+   diffList = diffPairs->diffList
+   foreach(diff diffList
+      FindChildren(diff)
+   )
+
+   ;Remove all child objects from the diffList
+   foreach(diff diffList
+      if(diff->isChild? then
+         diffPairs->diffList = remove(diff diffPairs->diffList)
+      )
+   )
+)
+
+defmethod( FlattenChildren (( diffPairs GMdiffPairs ) )
+   flatList = list()
+   foreach(diff diffPairs->diffList
+      flatList = append(flatList FlattenChildren(diff))
+   )
+   flatList
+)
+
+;============== CLASS METHODS (DIFF UPDATE) ===============
+
+;Add a diff to the list of those to be changed
+defmethod( AddChange (( diffPairs GMdiffPairs ) diffObj)
+   diffPairs->toChange = cons( diffObj diffPairs->toChange )
+)
+
+;Make the changes to diff's flagged in toChange
+defmethod( MakeChanges (( diffPairs GMdiffPairs ) )
+
+   ;Make the diff changes
+   foreach(diff diffPairs->toChange
+      ChangeState(diff)
+   )
+
+   ;Update attributes for diffs that need it
+   UpdateDiffAttrs(diffPairs)
+
+   ;Clear out the list
+   diffPairs->toChange = nil
+
+)
+
+;After update diff was run, some attributes need to be fixed
+;Originally created to fix line objects being messed up after merge
+defmethod( UpdateDiffAttrs (( diffPairs GMdiffPairs ) )
+
+   ;Fix wires
+   UpdateWireAttrs(diffPairs)
+
+)
+
+;============== CLASS METHODS (DISPLAY) ===============
+
+defmethod( ToReport (( diffPairs GMdiffPairs ) )
+
+   diffList = list()
+
+   appendList = lambda( (list item)
+      list = cons( ToReport(item) list)
+   )
+
+   foreach( diffItem diffPairs->diffList
+      diffList = appendList(diffList diffItem)
+   )
+
+
+   diffList
+)
+
+defmethod( PrintTables (( diffPairs GMdiffPairs ) )
+   printf("Src: %L\nDst: %L\n" tableToList(diffPairs->objsSrc) tableToList(diffPairs->objsDst))
+)
+
+/* TODO: Can I make custom layers?
+defmethod( DefineLpps (( diffPairs GMdiffPairs ) )
+
+if(!diffPairs->setLpps then
+   techFileA = techGetTechFile(diffPairs->cvidA)
+   techFileB = techGetTechFile(diffPairs->cvidB)
+
+   if(techFileA == techFileB
+      techFileList = list(techFileA)
+   else
+      techFileList = list(techFileA techFileB)
+   )
+
+   foreach(techFile techFileList
+
+
+   )
+   diffPairs->setLpps = t
+)
+
+)
+*/
+;============== CLASS METHODS (HIGHLIGHT)===============
+
+defmethod( HighlightDiffs (( diffPairs GMdiffPairs ) )
+   diffList = diffPairs->diffList
+
+   DeleteHighlights(diffPairs)
+
+   ;List current lpp's in schematic
+   ;foreach(lpp cv->layerPurposePairs printf("%s %s" lpp->layerName lpp->purpose))
+
+   hiliteSrc = makeTable("hliteTable" nil)
+   hiliteDst = makeTable("hliteTable" nil)
+
+   hiliteSrc["new"]     = geCreateHilightSet( diffPairs->srcCv list("annotate" "drawing7") )
+   hiliteSrc["partial"] = geCreateHilightSet( diffPairs->srcCv list("annotate" "drawing4") )
+   hiliteSrc["merged"]  = geCreateHilightSet( diffPairs->srcCv list("annotate" "drawing2") )
+
+   hiliteDst["new"]     = geCreateHilightSet( diffPairs->dstCv list("annotate" "drawing7") )
+   hiliteDst["partial"] = geCreateHilightSet( diffPairs->dstCv list("annotate" "drawing4") )
+   hiliteDst["merged"]  = geCreateHilightSet( diffPairs->dstCv list("annotate" "drawing2") )
+
+   diffPairs->hiliteSrc = hiliteSrc
+   diffPairs->hiliteDst = hiliteDst
+
+   foreach(diff diffList
+      Highlight(diff)
+   )
+   diffPairs->highlighted = t
+   diffPairs
+)
+
+defmethod( DeleteHighlights (( diffPairs GMdiffPairs ) )
+   geDeleteAllHilightSet(diffPairs->srcCv)
+   geDeleteAllHilightSet(diffPairs->dstCv)
+   diffPairs->highlighted = nil
+)
+
+defmethod( GetWids (( diffPairs GMdiffPairs ) )
+   diffPairs->widSrc = geGetCellViewWindow(diffPairs->srcCv)
+   diffPairs->widDst = geGetCellViewWindow(diffPairs->dstCv)
+)
+
+;============== CLASS METHODS (Debug)===============
+defmethod( GetDiff (( diffPairs GMdiffPairs ) diffId)
+   retDiff = nil
+   foreach(diff diffPairs->diffList
+      if( diff->id == diffId then retDiff = diff )
+   )
+   retDiff
+
+)

@@ -1,0 +1,105 @@
+/*
+load("/home/acook/git/lcbu-skill/scripts/git/merge/GMschPinClass.il")
+*/
+
+;============== CLASS DECLARTION ===============
+defclass( GMschPin
+   ;Inheritance
+   (GMschInst)
+
+   ;Slots
+   (
+      (type         @initform "pin" @initarg type)
+      (attrs        @initform GMD_pinAttrs() )
+   ); slots
+
+); defClass
+
+procedure( GMD_pinAttrs()
+;(attrName attrType)
+;attrName is the attribute name (in the object)
+;attrType if mismatch:
+;  t mean hardAttrs and will result in a "new" diff
+;  nil means softAttr partial diff
+
+attrs = GMD_instAttrs()
+pinAttrs = list(
+   list("net" "hard")
+)
+attrs = append( attrs pinAttrs)
+)
+
+
+defmethod( GetAttr ((obj GMschPin) attribute @key (source nil) (isProp nil))
+   if( !source then
+      source = obj->obj
+   )
+   case( attribute
+      ("net" || "name"
+         attr = source->net->name
+      )
+      (t
+         attr = get(source attribute)
+      )
+   )
+   attr
+)
+
+defmethod( StoreAttrs (( pin GMschPin ) @key (source nil))
+   callNextMethod()
+
+   storeAttr = list(list("direction" pin->obj->pin->term->direction))
+   pin->attrsStored = append( pin->attrsStored storeAttr)
+
+   storeAttr = list(list("master"    pin->obj->master))
+   pin->attrsStored = append( pin->attrsStored storeAttr)
+
+)
+
+defmethod( Create (( pin GMschPin ))
+
+   refPin = GetCreate(pin)
+
+   if( pin->isDst? then
+      pDirection   = refPin->direction
+   else
+      pDirection   = refPin->pin->term->direction
+   )
+
+   pName        = pin->dispName
+   pMaster      = refPin->master
+   pLocation    = refPin->xy
+   pOrientation = refPin->orient
+
+
+/* s chCreatePi*n(
+   d_cvId
+   d_master
+   t_termName
+   t_direction
+   g_offSheetP
+   l_origin
+   t_orientation
+   [g_powerSens]
+   [g_groundSens]
+   [g_sigType]
+   )*/
+
+   genObj = schCreatePin(
+      pin->dstCv
+      pMaster
+      pName
+      pDirection
+      nil
+      pLocation
+      pOrientation
+   )
+
+   AddGenObj(pin genObj)
+
+   callNextMethod()
+
+   pin
+
+)
+

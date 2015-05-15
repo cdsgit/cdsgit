@@ -1,0 +1,95 @@
+/*
+load("/home/acook/git/lcbu-skill/scripts/git/merge/classes/GMobj.il")
+*/
+
+;============== CLASS DECLARTION ===============
+defclass( GMschLabel
+   ;Inheritance
+   (GMschShape)
+
+   ;Slots
+   (
+      (type         @initform "label" @initarg type)
+      (attrs        @initform GMD_schLabelAttrs() )
+   ); slots
+
+); defClass
+
+procedure( GMD_schLabelAttrs()
+;(attrName attrType)
+;attrName is the attribute name (in the object)
+;attrType if mismatch:
+;  t mean hardAttrs and will result in a "new" diff
+;  nil means softAttr partial diff
+list(
+   list("objType"      "hard")
+   ;list("net"          "hard")
+   ;list("parent"       "hard")
+   list("theLabel"     "hard")
+   list("lpp"          "hard")
+   list("nPoints"      "hard")
+   list("xy"           "soft")
+   list("orient"       "soft")
+   list("font"         "soft")
+   list("justify"      "soft")
+   list("height"       "soft")
+   list("isDrafted"    "soft")
+   list("isOverbar"    "soft")
+)
+)
+
+
+;============== CLASS METHODS (CREATE) ===============
+
+/*
+defmethod( StoreAttrs (( label GMschLabel ) @key (source nil))
+   callNextMethod()
+
+   storeAttr = list(list("parent" label->obj->parent))
+   label->attrsStored = append( label->attrsStored storeAttr)
+
+
+)
+*/
+
+defmethod( Create (( inst GMschLabel ) )
+
+
+/* schCreateWireLabel(
+   d_cvId
+   d_glue
+   l_point
+   t_text
+   t_justify
+   t_orient
+   t_fontStyle
+   n_fontHeight
+   g_aliasP
+   )
+   => d_labelId | nil
+*/
+   refInst = GetCreate(inst)
+
+   parent = GetParentObj(inst)
+
+   genObj = schCreateWireLabel(
+      inst->dstCv
+      parent
+      refInst->xy
+      refInst->theLabel
+      refInst->justify
+      refInst->orient
+      refInst->font
+      refInst->height
+      nil
+   )
+
+   AddGenObj(inst genObj)
+
+   callNextMethod()
+
+   inst
+
+)
+
+

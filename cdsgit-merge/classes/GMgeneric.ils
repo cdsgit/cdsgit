@@ -1,0 +1,48 @@
+/*
+;============== GENERIC METHODS ===============
+
+defgeneric( Print (obj)
+
+   error("Print subclass responsibility\n")
+
+);defgeneric
+
+defgeneric( Diff (objA objB)
+
+   error("Diff subclass responsibility\n")
+
+);defgeneric
+
+defgeneric( ToList (objA)
+
+   error("ToList subclass responsibility\n")
+
+);defgeneric
+
+defgeneric( ToReport (objA)
+
+   error("ToReport subclass responsibility\n")
+
+);defgeneric
+
+defgeneric( Details (objA)
+
+   error("Details subclass responsibility\n")
+
+);defgeneric
+*/
+
+;============== PROCEDURES ===============
+
+;Generate a unique ID
+inSkill(
+procedure( GMgenerateID()
+
+   if(!boundp('GMuniqueID_cnt) then
+      GMuniqueID_cnt = 0
+   else
+      GMuniqueID_cnt = GMuniqueID_cnt + 1
+   )
+   GMuniqueID_cnt
+)
+)

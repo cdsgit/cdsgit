@@ -1,0 +1,98 @@
+
+
+;Create a Backup of the cellview
+;Uses a md5sum of the original to generate a temp file name
+defmethod( CreateBackup (( diffPairs GMdiffPairs ) )
+
+   dstCv = diffPairs->dstCv
+   viewName = dstCv->viewName
+
+   sysCommand = sprintf(nil "md5sum %s" dstCv->fileName)
+
+   cid=ipcBeginProcess(sysCommand)
+   ipcWait(cid)
+   exitStatus = cid->exitStatus
+
+   if(exitStatus != 0 then
+      error("Failed to create backup cellView")
+   )
+
+   md5sum = ipcReadProcess(cid)
+   md5sum = car(parseString(md5sum))
+
+   bckViewName = sprintf(nil "%s%s" viewName md5sum)
+
+   /*
+   dbCopyCellView(
+   d_srcCVId
+   t_libName
+   t_cellName
+   t_viewName
+   [ t_version
+   [ g_contextId
+   [ b_overwrite ] ] ]
+   )
+   => d_cellViewId / nil
+   */
+
+   ;Close the cv if it is open
+   existcv = GMopenCellViewByType(
+      dstCv->libName
+      dstCv->cellName
+      bckViewName
+      nil
+      "r"
+   )
+   if( existcv dbPurge(existcv) )
+
+   bckCv = dbCopyCellView( dstCv
+      dstCv->libName
+      dstCv->cellName
+      bckViewName
+      nil
+      ""
+      t
+   )
+
+   if( !bckCv warn("\n\n**** Could not create backup cellview\nYou will not be able to delete objects in the destination cell\n****") )
+
+   diffPairs->bckCv = bckCv
+)
+
+defmethod( DeleteBackup (( diffPairs GMdiffPairs ) )
+   bckCv = diffPairs->bckCv
+   if(bckCv then
+      dd = ddGetObj(
+         bckCv->libName
+         bckCv->cellName
+         bckCv->viewName
+      )
+      diffPairs->bckCv = nil
+      dbPurge(bckCv)
+      ddDeleteObj(dd)
+   )
+)
+
+;Open cellview (suppress warnings if it does not exist)
+procedure(GMopenCellViewByType(@rest args)
+  ; define a global variable to store the null port in, to
+  ; save reopening it next time
+  unless(boundp('GMnullPort) && openportp(GMnullPort)
+    GMnullPort=outfile("/dev/null")
+  ) ; unless
+
+  ; Be good - force any buffered warning to be displayed - this means
+  ; we don't swallow any warning unrelated to opening a cellView/
+  ; This is done by creating a new warning (which we'll swallow in a moment)
+  ; which forces what is in the buffer to be output.
+  warn("")
+
+  ; use SKILL's dynamic scoping to redefine woport to send all
+  ; warnings to /dev/null - and get the final (unprinted) warning
+  ; with getWarn()
+  let((cv (woport GMnullPort))
+    cv=apply('dbOpenCellViewByType args)
+    getWarn()
+    cv
+  ) ; let
+) ; procedure

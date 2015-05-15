@@ -1,0 +1,134 @@
+;Sch and Lay pins
+;CCS 11654264
+
+
+;Get the pins from a schematic
+procedure( GITmp_getPins(cvidA cvidB)
+
+
+termsA = cvidA->terminals
+termsB = cvidB->terminals
+
+list(termsA termsB)
+
+)
+
+
+
+;Diff each pin in a list of 2 pins
+procedure( GITmp_diffPins(pinsList)
+
+termsA = nthelem(1 pinsList)
+termsB = nthelem(2 pinsList)
+
+termsAmm = GITmp_diffPinsXY(termsA termsB)
+termsBmm = GITmp_diffPinsXY(termsB termsA)
+
+);proc
+
+
+
+;Diff any two pins
+;Returns the diff
+procedure( GITmp_diffPinsXY(termsX termsY)
+
+termsXmm = list()
+
+;First check for perfect match
+foreach(termX termsX
+   
+   matchStatus = nil
+
+   foreach(termY termsY
+   
+      ;Check the location
+      
+      if(  GITmp_pCheckName(termX termY) then
+         
+         locMatch = GITmp_pCheckLoc(termX termY)
+         orientMatch = GITmp_pCheckOrient(termX termY)
+         dirMatch = GITmp_pCheckDir(termX termY)
+         
+         if( locMatch && orientMatch && dirMatch then
+            matchStatus = t
+            termsX = remove(termX termsX)
+            termsY = remove(termY termsY)
+         else
+            matchStatus = list(locMatch orientMatch dirMatch)
+         
+         )
+      )
+         
+         
+   ); termsY
+   
+   if( matchStatus != t then
+   
+      mmKey = list(termX termX->name matchStatus)
+   
+      termsXmm = cons(mmKey termsXmm)
+   
+   )
+    
+);termsX
+
+termsXmm
+
+)
+
+
+
+
+;==============================
+;MATCHING FUNCTIONS
+;==============================
+
+
+
+
+
+
+;======MATCH PARAM======
+;bool Check Name matches
+procedure( GITmp_pCheckName(termA termB @key (returnA nil) (returnB nil) )
+   termA->name == termB->name
+)
+
+
+
+;======MATCH PARAM======
+;bool Check location matches
+procedure( GITmp_pCheckLoc(termA termB @key (returnA nil) (returnB nil) )
+
+      locA = GITmp_pLocation(termA)
+      locB = GITmp_pLocation(termB)
+      
+      locA == locB 
+)
+procedure( GITmp_pLocation(pin)
+   location = car(pin->pins)->fig->xy
+)
+
+
+
+;======MATCH PARAM======
+;bool Check orientation matches
+procedure( GITmp_pCheckOrient(termA termB @key (returnA nil) (returnB nil) )
+
+      orientA = GITmp_pGetOrient(termA)
+      orientB = GITmp_pGetOrient(termB)
+
+      orientA == orientB
+)
+procedure( GITmp_pGetOrient(pin)
+   car(pin->pins)->fig->orient
+)
+
+
+;======MATCH PARAM======
+;bool Check direction matches
+procedure( GITmp_pCheckDir(termA termB @key (returnA nil) (returnB nil) )
+   termA->direction == termB->direction
+)
+
+

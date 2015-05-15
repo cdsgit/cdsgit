@@ -1,0 +1,75 @@
+/*
+load("/home/acook/git/lcbu-skill/scripts/git/merge/classes/GMobj.il")
+*/
+
+;============== CLASS DECLARTION ===============
+defclass( GMschShape
+   ;Inheritance
+   (GMobj)
+
+   ;Slots
+   (
+      (type         @initform "shape" @initarg type)
+      (attrs        @initform nil )
+   ); slots
+
+); defClass
+
+;============== INITIALIZE ===============
+
+procedure( GMD_createShapes(diffPairs)
+
+   shapesSrc = diffPairs->srcCv->shapes
+   shapesDst = diffPairs->dstCv->shapes
+
+   foreach(shape shapesSrc
+      newShape = GMD_createShape_func(shape diffPairs)
+      AddDiffObj(diffPairs ?obj newShape ?group 'objsSrc)
+   )
+   foreach(shape shapesDst
+      newShape = GMD_createShape_func(shape diffPairs)
+      AddDiffObj(diffPairs ?obj newShape ?group 'objsDst)
+   )
+
+   diffPairs
+
+)
+
+procedure( GMD_createShape_func( shape diffPairs )
+
+   name = ""
+   classType = nil
+   foundValidClass = t
+
+   case(shape->objType
+   ("line"
+      classType = 'GMschWire
+      netName = shape->net->name
+      if(!netName netName = "")
+      name = sprintf(nil "Line %s at %L" netName shape->points)
+   )
+   ("label"
+      classType = 'GMschLabel
+      name = sprintf(nil "Label %s at %L" shape->theLabel shape->xy)
+   )
+   (t
+      foundValidClass = nil
+   )
+   )
+   if( foundValidClass then
+      newShape = makeInstance( classType ?obj shape ?name name ?diffPairs diffPairs )
+      FilterAttr(newShape); Sort the attributes
+   else
+      newShape = nil
+   )
+   newShape
+)
+
+;============== CLASS METHODS (DISPLAY) ===============
+
+defmethod( GPrint (( shape GMschShape ) )
+
+
+str = sprintf(nil "Name:%s\n",shape->name)
+
+);defmethod

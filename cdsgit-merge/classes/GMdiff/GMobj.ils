@@ -1,0 +1,483 @@
+/*
+load("/home/acook/git/lcbu-skill/scripts/git/merge/classes/GMobj.il")
+*/
+
+;============== CLASS DECLARTION ===============
+defclass( GMobj
+   ;Inheritance
+   (GMdiff)
+
+   ;Slots
+   (
+      (type         @initform "inst" @initarg type)
+      (attrs        @initform GMD_instAttrs() )
+      (attrsStored  @initform list() @initarg attrsStored)
+      (propsStored  @initform list() @initarg propsStored)
+      (hardAttrs    @initarg hardAttrs)
+      (softAttrs    @initarg softAttrs)
+      (propAttrs    @initarg propAttrs)
+   ); slots
+
+); defClass
+
+
+
+;============== CLASS METHODS (DISPLAY) ===============
+
+defmethod( Details (( inst GMobj ) )
+
+   str = callNextMethod(inst)
+
+   if( inst->status=="new" then
+      header = "New"
+   else
+      header = "Differences"
+   )
+
+   str = sprintf(nil "%s-------Instance %s %s ---\n" str inst->name header)
+
+   if(inst->verbose str = sprintf(nil "%sProps:%L\n" str inst->props))
+
+   if(inst->status=="partial" then
+      attrList = append(inst->softAttrs inst->propAttrs)
+      if( length(inst->props) != length(attrList) then error("GMobj Details: attr list should match property length\n") )
+   else
+      attrList = inst->attrs
+   )
+   for(i 1 length(attrList)
+      currAttr = nthelem(i attrList)
+      attrName = car(currAttr)
+      if(inst->status=="partial" then
+         attrDiff = nthelem(i inst->props)
+      else
+         attrDiff = nil
+      )
+      if( !attrDiff then
+         str = sprintf(nil "%s%s: %L: \n" str attrName get(inst->obj attrName))
+      )
+   )
+   str
+
+);defmethod
+
+defmethod( PrintChildren  (( inst GMobj) str @key (tab "\t"))
+   foreach( child inst->children
+      cellStr = child->obj->cellView->cellName
+      if(!cellStr cellStr="**invalid cell**, object does not exist")
+      str = sprintf(nil "%s%s%L %d %s from %s\n" str tab child child->id child->dispName cellStr)
+      str = PrintChildren(child str ?tab strcat(tab "\t"))
+   )
+   str
+)
+
+;============== CLASS METHODS(FOR DIFF) ===============
+
+defmethod( Diff   (( instX GMobj) instY )
+
+   attrList  = instX->attrs
+   hardAttrs = instX->hardAttrs
+   softAttrs = instX->softAttrs
+   propAttrs = instX->propAttrs
+
+   ;Check hardAttrs first
+   newDiff = nil
+   foreach(attr hardAttrs
+      attrName = car(attr)
+      diffResult = DiffAttr(instX instY attrName)
+      if( !diffResult then
+         newDiff = t
+      )
+   )
+
+   if( !newDiff && propAttrs && (length(instX->propAttrs) != length(instY->propAttrs)) then
+      warn("GMobj Diff: Attribute List's did not match on partiall matched instances\n
+         You man need to run a callback and rerun the diff\nInstances:%s %s" instX->name instY->name)
+      newDiff = t
+   )
+
+   ;All hardAttrs matched, check softAttrs
+   if( !newDiff then
+      statusList = nil
+      foreach(attr softAttrs
+         attrName = car(attr)
+         diffResult = DiffAttr(instX instY attrName)
+         statusList = cons( diffResult statusList)
+      )
+      ;Diff properties
+      if(propAttrs then
+         instY->propAttrs = propAttrs; Sync up the attribute lists
+         foreach( attr propAttrs
+            attrName = car(attr)
+            diffResult = DiffAttr(instX instY attrName ?isProp t)
+            statusList = cons( diffResult statusList)
+         )
+      )
+
+      statusList = reverse(statusList)
+
+      ;All Matched
+      if( !member(nil statusList)  then
+         matchStatus = t
+      else
+         matchStatus = statusList
+      )
+   else
+      matchStatus = nil
+   )
+   matchStatus
+
+);defmethod
+
+;============== CLASS METHODS(ATTRIBUTES) ===============
+
+defmethod( DiffAttr ((objX GMobj) objY attribute @key (isProp nil) )
+
+   attrX = GetAttr( objX attribute ?isProp isProp)
+   attrY = GetAttr( objY attribute ?isProp isProp)
+   if(objX->verbose printf("%L %L %L\n" attrX attrY attrX==attrY))
+   attrX == attrY
+
+)
+
+defmethod( GetAttr ((obj GMobj) attribute @key (source nil) (isProp nil))
+   if( !source then
+      source = obj->obj
+   )
+   if(isProp then
+      val = car(setof(p source->prop p->name==attribute))->value
+   else
+      val = get(source attribute)
+   )
+
+)
+
+defmethod( SetAttr ((obj GMobj) attribute value @key (target nil) )
+   if( !target then
+      target = obj->obj
+   )
+   dbSet( target value attribute )
+)
+
+defmethod( FilterAttr ((obj GMobj) )
+
+   ;Filter Attributes
+   obj->hardAttrs = setof(a obj->attrs cadr(a)=="hard")
+   obj->softAttrs = setof(a obj->attrs cadr(a)=="soft")
+   obj->propAttrs = setof(a obj->attrs cadr(a)=="prop")
+)
+
+defmethod( StoreAttr (( inst GMobj) attribute @key (source nil))
+   storeAttr = list(list(attribute GetAttr(inst attribute ?source source) ))
+   inst->attrsStored = append( inst->attrsStored storeAttr)
+)
+
+
+;============== CLASS METHODS(STORAGE FOR ATTRIBUTES) ===============
+
+
+
+defmethod( UpdateAttr (( inst GMobj ) @key (source nil) (target nil))
+
+   if( !source then source = inst->refObj)
+   if( !target then target = inst->obj)
+
+   attrList = append(inst->softAttrs inst->propAttrs)
+
+   ;Loop through each softAttr and set the property if it did not match
+   for( i  1 length(attrList)
+      currAttr = nthelem(i attrList)
+      attrName = car(currAttr)
+      newValue = GetAttr(inst attrName ?source source)
+      if( !nthelem( i inst->props) then
+         StoreAttr(inst attrName)
+         SetAttr(inst attrName newValue ?target target)
+      )
+   )
+)
+defmethod( RestoreAttr (( inst GMobj ) @key (attrSet nil) (target nil))
+
+   if( !attrSet attrSet=inst->attrsStored )
+
+   foreach(attr attrSet
+      attrName = car(attr)
+      attrValue = cadr(attr)
+      SetAttr(inst attrName attrValue ?target target)
+   )
+)
+defmethod( RestoreProps (( inst GMobj ) @key (target nil))
+
+   props = inst->propAttrs
+   attrSet = list()
+   foreach(attr inst->attrsStored
+      if( setof(p props car(p)==car(attr) ) then
+         attrSet = cons(attr attrSet)
+      )
+   )
+
+   RestoreAttr(inst ?attrSet attrSet ?target target)
+)
+
+defmethod( StoreAttrs (( inst GMobj ) @key (source nil))
+
+   attrList = append( inst->attrs inst->propAttrs)
+
+   ;Loop through each softAttr and set the property if it did not match
+   foreach( attr attrList
+      attrName = car(attr)
+      StoreAttr(inst attrName ?source source)
+   )
+)
+
+defmethod( GetStoredAttrs (( inst GMobj ) )
+   obj = ncons(nil)
+   foreach( attr inst->attrsStored
+      putprop(obj cadr(attr) car(attr))
+   )
+   obj
+)
+
+;============== CLASS METHODS(FOR CREATE/DELETE) ===============
+
+defmethod( Create (( inst GMobj ) )
+   ;SUBCLASS EXECUTE HERE
+   ;then use callNextMethod()
+
+)
+
+;Create a new diff object from any dbObject
+defmethod( CreateFromObj (( obj GMobj ) dbObj)
+   newObj = nil
+   case(dbObj->objType
+      ;( list("inst")
+      ;
+      ;)
+      ( list("line" "label" "textDisplay")
+         newObj = GMD_createShape_func( dbObj obj->diffPairs )
+      )
+      ;Ignored types
+      ( list("marker")
+         newObj = nil
+      )
+      (t
+         error("GMobj CreateFromObj: Did not recognize dbObj->objType %s\n" dbObj->objType)
+      )
+   )
+   newObj
+)
+
+defmethod( AddGenObj (( inst GMobj ) genObj)
+   if( genObj then
+
+      ;Some create functions return lists. Extract the instance
+      if( type(genObj) == 'list then
+         if(length(genObj) > 1 then
+            error("GMobj AddGenObj: Create returned more than one object!")
+         )
+         genObj = car(genObj)
+      )
+      ;Different storage place depending on if the inst is from src or dst
+      if(inst->isDst? then
+         inst->obj = genObj
+      else
+         inst->genObj = genObj
+      )
+   else
+      str = sprintf(nil "GMobj %s AddGenObj: Creation of object %s failed. Is the destination cell writable?\n"
+         className(classOf( inst )) inst->name )
+      inst->genFail = t
+      warn(str)
+   )
+)
+
+defmethod( GetCreate  (( inst GMobj ) )
+   if( inst->isDst? then
+      refObj = GetStoredAttrs(inst)
+   else
+      refObj = inst->obj
+   )
+   if(!refObj error("GMobj GetCreate: No ref obj found!\n"))
+   refObj
+)
+
+defmethod( GetParentObj (( inst GMobj) )
+
+   if( inst->isDst? then
+      parentObj = inst->parent->obj
+   else
+      parentObj = inst->parent->genObj
+   )
+
+   parentObj
+
+)
+
+defmethod( Destroy (( inst GMobj )  )
+
+   if( inst->isDst? then
+      StoreAttrs(inst)
+      delObj = inst->obj
+   else
+      delObj = inst->genObj
+   )
+
+   if( type(delObj) == 'list then
+      foreach(inst delObj
+         dbDeleteObject(inst)
+      )
+   else
+      dbDeleteObject(delObj)
+   )
+
+   if( inst->isDst? then
+      inst->obj = nil
+   else
+      inst->genObj = nil
+   )
+
+)
+
+;============== CLASS METHODS (PARENT/CHILD) ===============
+
+
+defmethod( CreateParent (( inst GMobj ))
+   error("GMobj CreateParent: This function should be defined by a sub-class")
+)
+
+
+;Find all children of a diff object
+defmethod( FindChildren (( obj GMobj ) @key (depth 1))
+
+   foreach(child GetChildFromObj(obj)
+
+      newObj = CreateFromObj(obj child)
+
+      if( newObj then
+
+         ;If the object is part of the diffList, flag it as a child
+         diff = car(setof(diff obj->diffPairs->diffList diff->obj == child))
+         if(diff then
+            diff->isChild? = t
+         )
+
+         ;Create a new Diff
+         newObj = NewDiff( newObj ?status "new" ?parent obj)
+
+         if(obj->verbose printf("Parent: %L Child %L %d Name Class %s\n" obj newObj depth newObj->dispName classOf(newObj)) )
+
+
+         ;Find any children
+         newObj = FindChildren(newObj ?depth depth+1)
+
+         ;Add to the children
+         obj->children = cons(newObj obj->children)
+
+         printf("%L\n" obj->children)
+      )
+
+   )
+   obj
+)
+
+defmethod( GetChildFromObj (( obj GMobj ) )
+
+   children = obj->obj->children
+   children
+)
+
+;Return the children as a flat list
+defmethod( FlattenChildren (( obj GMobj ) )
+   flatList = list(obj)
+   foreach( child obj->children
+      flatList = append(flatList FlattenChildren(child))
+   )
+   flatList
+)
+
+;============== CLASS METHODS(FOR VISUALS) ===============
+
+
+defmethod( Highlight (( diff GMobj ))
+
+
+   hiliteSrc = diff->diffPairs->hiliteSrc
+   hiliteDst = diff->diffPairs->hiliteDst
+
+   hiliteSet    = nil
+   hiliteSetRef = nil
+   hiliteSetGen = nil
+   hiliteObj    = diff->obj
+   hiliteObjRef = diff->refObj
+   hiliteObjGen = diff->genObj
+
+   if(diff->merged then
+      key = "merged"
+   else
+      key = diff->status
+   )
+
+   diffCv = hiliteObj->cellView
+   srcCv  = diff->diffPairs->srcCv
+   dstCv  = diff->diffPairs->dstCv
+
+   if( eq(diffCv srcCv) hiliteSet = hiliteSrc[key] )
+   if( eq(diffCv dstCv) hiliteSet = hiliteDst[key] )
+
+   ;Partial merge
+   if( hiliteObjRef then hiliteSetRef = hiliteSrc[key] )
+
+   ;Generated Obj
+   if( hiliteObjGen then hiliteSetGen = hiliteDst[key] )
+
+   drawAll = t
+   if(diff->type == "pin" then
+      drawAll = nil
+   )
+
+   if( hiliteSet then
+      hiliteSet->enable = t
+      if(hiliteSet->cellView != hiliteObj->cellView  warn("Highlight cv did not match cell cv") )
+      geAddHilightFig(hiliteSet hiliteObj drawAll)
+   )
+   if( hiliteSetRef then
+      hiliteSetRef->enable = t
+      if(hiliteSetRef->cellView != hiliteObjRef->cellView  warn("Highlight cv did not match cell cv") )
+      geAddHilightFig(hiliteSetRef hiliteObjRef drawAll)
+   )
+   if( hiliteSetGen then
+      hiliteSetGen->enable = t
+      if(hiliteSetGen->cellView != hiliteObjGen->cellView  warn("Highlight cv did not match cell cv") )
+      geAddHilightFig(hiliteSetGen hiliteObjGen drawAll)
+   )
+
+   foreach(child diff->children
+      Highlight(child)
+   )
+)
+
+defmethod( Select (( diff GMobj ) )
+
+   if( diff->obj then
+      wid = geGetCellViewWindow(diff->obj->cellView)
+      if(wid then
+         geSelectObject(diff->obj)
+      )
+
+      if( diff->refObj then
+         wid = geGetCellViewWindow(diff->refObj->cellView)
+         if(wid then
+            geSelectObject(diff->refObj)
+         )
+      )
+   )
+   foreach(child diff->children
+      Select(child)
+   )
+)
+
+/*
+geGetFigHilightObjectId
+
+defmethod( UnHighlight(( diff ) )
+
+)
+*/

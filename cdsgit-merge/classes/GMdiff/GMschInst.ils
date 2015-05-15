@@ -1,0 +1,127 @@
+/*
+load("/home/acook/git/lcbu-skill/scripts/git/merge/GMschPinClass.il")
+*/
+
+;============== CLASS DECLARTION ===============
+defclass( GMschInst
+   ;Inheritance
+   (GMobj)
+
+   ;Slots
+   (
+      (type         @initform "inst" @initarg type)
+      (attrs        @initform GMD_instAttrs() )
+   ); slots
+
+); defClass
+
+procedure( GMD_instAttrs()
+;(attrName attrType)
+;attrName is the attribute name (in the object)
+;attrType if mismatch:
+;  t mean hardAttrs and will result in a "new" diff
+;  nil means softAttr partial diff
+list(
+   list("name"      "hard")
+   list("libName"   "hard")
+   list("cellName"  "hard")
+   list("viewName"  "soft")
+   list("objType"   "hard")
+   list("orient"    "soft")
+   list("xy"        "soft")
+   list("numInst"   "soft")
+)
+)
+
+
+;Get the pins from a schematic
+procedure( GMD_createInsts(diffPairs)
+
+
+   instsScr = diffPairs->srcCv->instances
+   instsDst = diffPairs->dstCv->instances
+
+   foreach(inst instsScr
+      newInst = GMD_createInst_func(inst diffPairs)
+      AddDiffObj(diffPairs ?obj newInst ?group 'objsSrc)
+   )
+   foreach(inst instsDst
+      newInst = GMD_createInst_func(inst diffPairs)
+      AddDiffObj(diffPairs ?obj newInst ?group 'objsDst)
+   )
+
+   diffPairs
+
+)
+
+
+procedure( GMD_createInst_func( inst diffPairs)
+
+   if(inst->purpose == "pin" then
+      newInst = makeInstance( 'GMschPin  ?obj inst ?name inst->net->name ?diffPairs diffPairs )
+   else
+      newInst = makeInstance( 'GMschInst ?obj inst ?name inst->name      ?diffPairs diffPairs )
+
+      ;Add the unique instance properties (L,W,Multiplicity, ect)
+      if(inst->prop then
+         foreach(prop inst->prop
+            newInst->attrs = append( newInst->attrs list(list(prop->name "prop")) )
+         )
+      )
+   )
+   FilterAttr(newInst); Sort the attributes
+   newInst
+)
+
+
+
+defmethod( Create (( inst GMschInst ) )
+
+
+/* schCreateInst(
+    d _cvId         *
+    d_masterId
+    t_instanceName
+    l_origin
+    t_orient
+    [ n_magnification ]
+   )
+   => d_inst | nil
+*/
+
+   refInst = GetCreate(inst)
+
+   ;Check if the instance name exists
+   if( type(refInst->name) != 'string break())
+   if(dbFindAnyInstByName(inst->dstCv refInst->name) then
+      instName = nil
+   else
+      instName = refInst->name
+   )
+   genObj = dbCreateInstByMasterName(
+      inst->dstCv
+      refInst->libName
+      refInst->cellName
+      refInst->viewName
+      instName
+      refInst->xy
+      refInst->orient
+   )
+
+
+   AddGenObj(inst genObj)
+
+
+   ;Copy all properties
+   if( inst->propAttrs then
+      if( inst->isDst? then
+         RestoreProps(inst ?target genObj)
+      else
+         dbCopyProp(refInst genObj)
+      )
+   )
+
+   callNextMethod()
+
+   inst
+)

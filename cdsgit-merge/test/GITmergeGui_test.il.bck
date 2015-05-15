@@ -1,0 +1,85 @@
+;GUI test functions
+
+
+procedure( GITmg_generate_data()
+
+GITmg_uniqueID_cnt = 0
+
+GITmg_master_data = list(
+   GITmg_data(?name "Pin A1" ?type "pin" ?mergeKey "A")
+   GITmg_data(?name "Pin A2" ?type "pin" ?mergeKey "A")
+   GITmg_data(?name "Pin A3" ?type "pin" ?mergeKey "A")
+   GITmg_data(?name "Pin B1" ?type "pin" ?mergeKey "B")
+   GITmg_data(?name "Pin M1neverReallUsed" ?type "pin" ?mergeKey "M")
+)
+
+); procedure
+
+
+;defstruct
+;printstruct
+
+;Make a table of data
+procedure(GITmg_data( @key (name nil) (type nil) (mergeKey nil))
+
+   gitData = makeTable("gittable" 0)
+   ;tablep(gitData)
+   
+   if(!boundp('GITmg_uniqueID_cnt) then
+      GITmg_uniqueID_cnt = 0
+   else
+      GITmg_uniqueID_cnt = GITmg_uniqueID_cnt + 1
+   )
+   
+   gitData["name"]      = name
+   gitData["type"]      = type
+   gitData["uniqueID"]  = sprintf(nil "%d" GITmg_uniqueID_cnt)
+   gitData["mergeKey"]  = mergeKey
+   gitData["origKey"]   = mergeKey
+   
+   gitData
+   
+)
+
+
+
+
+;Map git data to list for the report form
+procedure(GITmg_data_toList(GITmg_data)
+
+   dataList = list( GITmg_data["name"] GITmg_data["type"] GITmg_data["uniqueID"])
+   
+   dataList
+)
+
+
+procedure( GITmg_populateReport()
+let( (reportListA reportListM reportListB)
+
+itemList = GITmg_master_data
+
+foreach(item itemList
+   
+   
+   
+   ;convert item to a list
+   item_converted = GITmg_data_toList(item)
+      
+   case(item["mergeKey"]
+   
+      ("A"
+         reportListA = cons( item_converted reportListA )
+      )
+      ("M"
+         reportListM = cons( item_converted reportListM )      
+      )
+      ("B"
+         reportListB = cons( item_converted reportListB)         
+      )
+      (t
+         error("GITmg_populateReport: INVALID mergeKey for Git data")
+      )
+   
+   )
+
+)

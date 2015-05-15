@@ -1,0 +1,166 @@
+/*
+load("/home/acook/git/lcbu-skill/scripts/git/merge/classes/GMobj.il")
+*/
+
+;============== CLASS DECLARTION ===============
+defclass( GMschWire
+   ;Inheritance
+   (GMschShape)
+
+   ;Slots
+   (
+      (type         @initform "wire" @initarg type)
+      (attrs        @initform GMD_schWireAttrs() )
+   ); slots
+
+); defClass
+
+procedure( GMD_schWireAttrs()
+;(attrName attrType)
+;attrName is the attribute name (in the object)
+;attrType if mismatch:
+;  t mean hardAttrs and will result in a "new" diff
+;  nil means softAttr partial diff
+list(
+   list("objType"      "hard")
+   list("purpose"      "hard")
+   list("lpp"          "hard")
+   list("nPoints"      "hard")
+   list("points"       "hard")
+)
+)
+
+;Fix any wires after a merge was done
+;Wires objects can get dynamically destroyed/created
+;when instances cause them to split
+defmethod( UpdateWireAttrs (( diffPairs GMdiffPairs ) )
+
+   ;Fix wires
+
+   ;Find merged lines from src
+   flatDiffs = FlattenChildren(diffPairs); Get all of the diffs (including children)
+   wireDiffsSrc = setof(diff flatDiffs diff->type == "wire" && diff->merged==t && !diff->isDst?)
+   wireDiffsDst = setof(diff flatDiffs diff->type == "wire" && diff->merged==nil && diff->isDst?)
+
+   wireDiffs = append(wireDiffsDst wireDiffsSrc)
+
+   wireObjs = setof(obj diffPairs->dstCv->shapes obj->objType == "line")
+   printf("called update wires\n")
+   foreach(wireDiff wireDiffs
+      if( wireDiff->isDst? then
+         points  = GetStoredAttrs(wireDiff)->points
+         ;Wire was never merged so attr's were not stored
+         if( !points then
+            points = wireDiff->obj->points
+         )
+      else
+         points = wireDiff->obj->points
+      )
+      matchingWire = setof(wire wireObjs wire->points == points )
+
+      ;Sometimes a wire will get merged into a single wire
+      if( !matchingWire then
+         matchingWire = CheckOverlap(wireDiff points)
+      )
+
+      if( length(matchingWire) > 1 error("How can I find more than 1 wire for a set of points?") )
+      matchingWire = car(matchingWire)
+
+      if( wireDiff->genObj != matchingWire then
+         if(wireDiff->isDst? then
+            wireDiff->obj = matchingWire
+         else
+            wireDiff->genObj = matchingWire
+         )
+      )
+
+   )
+
+)
+
+;Check if a created wire was overlaped and thus
+;the object was destroyed
+defmethod( CheckOverlap (( inst GMschWire ) points)
+
+   x1 = caar(points)
+   x2 = caadr(points)
+   y1 = cadar(points)
+   y2 = cadadr(points)
+
+   if( y1 == y2 then
+      axisElem = 2
+      axisVal = y1
+      limElem = 1
+      minLim = x1
+      maxLim = x2
+   else
+      axisElem = 1
+      axisVal = x1
+      limElem = 2
+      minLim = y1
+      maxLim = y2
+   )
+
+   cvWires = setof(shape inst->dstCv->shapes shape->objType == "line" && shape->layerName=="wire")
+   overlapWire = setof(wire cvWires
+      nthelem( axisElem  car(wire->points)) == axisVal &&
+      nthelem( axisElem cadr(wire->points)) == axisVal &&
+      nthelem( limElem   car(wire->points)) <= minLim &&
+      nthelem( limElem  cadr(wire->points)) >= maxLim
+   )
+
+   if(!overlapWire then
+      break()
+      error("GMschWire CheckOverlap: Could not find any existance of a wire!")
+   )
+
+   overlapWire
+)
+
+;============== CLASS METHODS (CREATE) ===============
+defmethod( Create (( inst GMschWire ) )
+
+   refInst = GetCreate(inst)
+
+   /*
+    s chCreateW*ire(
+    d_cvId
+    t_entryMethod
+    t_routeMethod
+    l_points
+    n_xSpacing
+    n_ySpacing
+    n_width
+    [ t_color ]
+    [ t_lineStyle ]
+    )
+    => l_wireId
+   */
+   if(refInst->width then
+      width = refInst->width
+   else
+      width = 0
+   )
+
+   genObj = schCreateWire(
+      inst->dstCv
+      "draw"
+      ""
+      refInst->points
+      0
+      0
+      width
+      ;refInst->color
+      ;refInst->lineStyle
+   )
+
+
+   printf("Created %d line %L obj %L\n" inst->id refInst->points genObj)
+
+   AddGenObj(inst genObj)
+
+   callNextMethod()
+
+   inst
+
+)
