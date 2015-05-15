@@ -1,0 +1,23 @@
+/*
+   Bindkeys
+load("/home/acook/git/cdsgit/cdsgit-binder/binder_test.ils")
+*/
+
+load("/home/acook/git/cdsgit/cdsgit-binder/Binder.ils")
+
+
+
+myBindkeys = list(
+
+   list("Schematics" "a" "myCB()" "CoolApp" "A dumb bindkey a")
+   list("Schematics" "b" "myCB1()" "CoolApp" "A dumb bindkey b")
+
+)
+
+bk = Binder(?verbose t)
+
+Add(bk myBindkeys)
+
+
+
+Bind(bk)

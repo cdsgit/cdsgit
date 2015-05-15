@@ -1,0 +1,196 @@
+/*
+   Bindkeys
+load("/home/acook/git/cdsgit/cdsgit-binder/Binder.ils")
+*/
+
+
+
+/*
+   Create a grid for easy form layout and resize
+   load(strcat(lcbu_path "/scripts/generic_form2/Gridder.ils"))
+
+   Grid starts at 1,1 ends at rows,cols
+
+*/
+
+defclass( Binder
+
+   () ;; superclass
+   (
+      (bindkeys  @initform nil ); List for the fields in the form
+      (keyFile   @initarg keyFile ); A place to save user choices
+
+      (verbose @initform nil @initarg verbose) ;Display info
+   )
+)
+
+
+
+procedure( Binder( @key (verbose nil) (keyFile "~/.cadence_bindkeys") )
+let(
+   (binder)
+   binder = makeInstance('Binder ?verbose verbose ?keyFile keyFile)
+   binder
+);let
+)
+
+;Add Bindkeys
+defmethod( Add (( b Binder) bkList)
+   bkLength = length(car(bkList))
+   if( b->verbose printf("bkList length %L\n" bkLength) )
+
+   ;Single Bindkey
+   if(  bkLength == 1 then
+      if( b->verbose printf("Adding Single Key\n%L\n" bkList) )
+      AddKey(b bkList)
+   ;List of Bindkeys
+   else
+      if( b->verbose printf("Adding Multiple Keys\n%L\n" bkList) )
+      foreach(bk bkList
+         AddKey(b bk)
+      )
+
+   )
+
+)
+
+
+;Add a single Key
+;hiSetBindKey("Layout" "Ctrl Shift<Btn1Down>" "IDMgetidpt()" )
+
+defmethod( AddKey ((b Binder) bk)
+
+   if( length(bk) != 5  then
+      error("Binder AddKey: Bindkey input must be list( [t_applicationType] [t_key] [t_skill_cmd] [t_appname] [t_description] )\n%L\nLength %L" bk length(bk) )
+   )
+   b->bindkeys = append(b->bindkeys list(bk) )
+)
+
+;Bind the keys
+defmethod( Bind ((b Binder))
+
+   keysSaved = nil
+
+   foreach( bk b->bindkeys
+
+      appType=nthelem(1 bk)
+      keyStr =nthelem(2 bk)
+      cbStr  =nthelem(3 bk)
+      bkAppName=nthelem(4 bk)
+      bkDescrip=nthelem(5 bk)
+
+      if( b->verbose printf("Bind: appType-%s keyStr-%s cbStr-%s bkAppName-%s bkDescrip-%s\n" appType keyStr cbStr bkAppName bkDescrip) )
+
+      setBk = t
+      oldCB = hiGetBindKey( appType keyStr )
+      if( oldCB then
+         loadResult = Load(b bk)
+         if(  loadResult then
+            if( b->verbose printf("Load Result %L\n" loadResult) )
+            case( loadResult
+               ("bind" setBk = t)
+               ("skip" setBk = nil)
+            )
+         else
+
+            setBk=Dialog(b sprintf(nil
+"Bindkey already set\n
+Cadence Application: %s\n
+Key: %s\n
+Old Callback: %s\n
+New Callback: %s\n
+Application: %s\n
+Description: %s\n\n
+Overwrite?"
+               appType keyStr oldCB cbStr bkAppName bkDescrip)
+            )
+
+            bk = append(bk list(setBk))
+
+            Save(b bk)
+            keysSaved = t
+
+         )
+      )
+
+      if( setBk then
+         hiSetBindKey( appType keyStr cbStr)
+         if( b->verbose printf("Bindkey set\n") )
+      )
+   )
+
+   if( keysSaved then
+      Info(b sprintf(nil "Your Bindkey choices were saved to %s\n\nDelete this file to reset your choices" b->keyFile) )
+   )
+
+)
+
+
+;Display a Y/N dialog
+
+defmethod( Dialog (( b Binder ) infoStr)
+
+   response = hiDisplayAppDBox(?name 'binderDialogForm
+      ?dboxBanner "Binder Prompt"
+      ?dboxText infoStr
+      ?buttonLayout 'UserDefined
+      ?buttons list("Yes" "No")
+      ?callback list(nil nil)
+      ;?dialogStyle 'modeless
+   )
+
+   if(response == 1 then
+      response = t
+   else
+      response = nil
+   )
+
+)
+defmethod( Info (( gs Binder ) infoStr)
+
+   hiDisplayAppDBox(?name 'binderInfoForm
+      ?dboxBanner "Binder Info"
+      ?dboxText infoStr
+      ?buttonLayout 'Close
+      ;?dialogStyle 'modeless
+   )
+
+)
+
+;Save the bindkey to keyFile
+defmethod( Save (( b Binder) bindkey )
+   if(b->verbose printf("Saving to file %s\n" b->keyFile) )
+
+   fout = outfile( b->keyFile "a")
+
+   fprintf( fout "%L\n" bindkey )
+
+   close(fout)
+)
+
+;Load a bindkey from a file
+defmethod( Load (( b Binder) bindkey )
+
+   if(b->verbose printf("Loading from file %s\n" b->keyFile) )
+
+   foundKey = nil
+   if( !isFile( b->keyFile ) then
+      foundKey = nil
+   else
+      fin = infile( b->keyFile )
+      while( flist = lineread(fin)
+         flist = car(flist)
+         if(b->verbose printf("%L\n" flist) )
+         matched = ( flist == append(bindkey list(t)) || flist == append(bindkey list(nil)) )
+         if( matched then
+            if(b->verbose printf("MATCHED bindkey\n") )
+            if( nthelem( 6 flist ) then
+               foundKey = "bind"
+            else
+               foundKey = "skip"
+            )
+         )
+      )
+   )
+   foundKey
+)
