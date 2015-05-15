@@ -1,0 +1,29 @@
+defmethod( CloneRepo (( gs GitShell ))
+
+   usr_response = Dialog(gs sprintf(nil "Review the information show and press Yes to begin cloning\nPlease be patient, cadence will hang while the cloning occurs!\n URL\n  %s\nDestination\n  %s" gs->url gs->path) )
+
+   if( usr_response then
+      if( gs->url && gs->url != "" then
+         syscmd = strcat("git clone -- " gs->url " " gs->path)
+
+         result=Cmd(gs syscmd)
+
+         if(!result then
+            Error(gs sprintf(nil "Not a valid url %s\nCommand:%s" gs->url syscmd))
+         else
+
+            badresult = car( parseString(result) ) == "fatal:"
+
+            if(badresult then
+               Error(gs sprintf(nil "Clone Failed!\n URL\n  %s\nDestination\n  %s\nResponse\n  %s" gs->url gs->path response) )
+            )
+
+            Info(gs sprintf(nil "Clone Success!\n URL\n  %s\nDestination\n  %s" gs->url gs->path) )
+         )
+      else
+         Error(gs sprintf(nil "Please enter a URL to clone!\n %L" gs->url) )
+      )
+   )
+
+   t
+)

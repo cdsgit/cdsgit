@@ -1,0 +1,21 @@
+/*
+Start git-gui
+git_gui_command is a global variable that is
+*/
+
+defmethod( Gui (( gs GitShell ))
+
+   printf(strcat("Starting git in " gs->root->str "\n"))
+
+   importSkillVar(cdsgit_gui_command)
+
+   gui_cmd = cdsgit_gui_command
+
+   if( !gui_cmd gui_cmd = "git-gui" )
+
+   ;cd to the path and start git
+   system(strcat("cd " gs->root->str " && " cdsgit_gui_command " &"))
+
+
+t
+)

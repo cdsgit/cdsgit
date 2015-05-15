@@ -1,0 +1,16 @@
+;Return an error
+
+
+defmethod( Error (( gs GitShell ) errStr)
+
+
+   hiDisplayAppDBox(?name 'gitShellErrorForm
+      ?dboxBanner "CdsGit GitShell Error"
+      ?dboxText errStr
+      ?buttonLayout 'Close
+      ;?dialogStyle 'modeless
+   )
+
+   error(sprintf(nil "Error GitShell: %s" errStr))
+
+)

@@ -1,0 +1,13 @@
+;Return Info
+
+defmethod( Info (( gs GitShell ) infoStr)
+
+
+   hiDisplayAppDBox(?name 'gitShellInfoForm
+      ?dboxBanner "CdsGit GitShell Info"
+      ?dboxText infoStr
+      ?buttonLayout 'Close
+      ;?dialogStyle 'modeless
+   )
+
+)

@@ -1,0 +1,21 @@
+;Test is path is a git repo
+
+defmethod( Check (( gs GitShell ))
+
+   if( !isDir(gs->path) && gs->path != ""
+      Error(gs sprintf(nil "GitShell Check -- %L not a directory.\nSupport for files needs to be added" gs->path) )
+   )
+
+   syscmd = strcat("cd " gs->path " && git rev-parse --is-inside-work-tree ")
+
+   result=Cmd(gs syscmd ?ignoreFatal t)
+
+   if(result!="true\n" then
+      gs->valid = nil
+      if( !gs->silent Error(gs sprintf(nil "Not a valid Git repository %s" gs->path)) )
+   else
+      gs->valid = t
+   )
+
+   t
+)

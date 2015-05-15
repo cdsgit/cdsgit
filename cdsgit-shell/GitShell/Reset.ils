@@ -1,0 +1,14 @@
+defmethod( Reset (( gs GitShell ) oppath)
+
+   if( oppath && oppath != "" then
+
+      syscmd = strcat("cd " gs->root->str " && git reset HEAD -- " oppath)
+
+      result=Cmd(gs syscmd)
+
+      if(!reset then
+         Error(gs sprintf(nil "Not a valid path %s\nCommand:%s" oppath syscmd))
+      )
+   )
+   t
+)

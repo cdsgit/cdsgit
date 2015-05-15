@@ -1,0 +1,56 @@
+
+let(
+()
+
+;Remove a path from a string
+defmethod( Trim (( gsp GSpath ) @key (loop 1) (reverse t))
+
+   ;If reverse = t - Remove tail (right) end of path
+   ;Loop repeats
+
+   if(reverse Reverse(gsp) )
+
+   for(i 1 loop
+      resultStr = trimHelper(gsp)
+   )
+
+   if(reverse Reverse(gsp) )
+
+   gsp->str
+)
+
+
+
+;Helper to trim a path
+procedure( trimHelper(gsp)
+
+   strVerbose = nil
+
+   seperator = "/"
+
+   resultStr = ""
+
+   len = Length(gsp)
+
+   found = nil
+
+   for( cindex 1 len
+      c = GetChar(gsp cindex)
+
+      if(strVerbose printf("%s %s %L %L\n" c seperator c==seperator found))
+
+      cond(
+         ( !found && c==seperator
+            found= t
+         )
+         ( found
+            resultStr = strcat(resultStr c)
+         )
+      )
+
+   )
+   gsp->str = resultStr
+
+)
+
+);let

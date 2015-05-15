@@ -1,0 +1,34 @@
+/*
+   Get the current commit message
+*/
+
+let( ()
+
+defmethod( CommitMsg (( gs GitShell ))
+
+   commit_file = strcat(gs->root->str "/.git/MERGE_MSG")
+
+   commit_msg = ""
+
+   if( isFile(commit_file) then
+      commit_msg = scanFile(commit_file)
+   )
+
+   commit_msg
+)
+
+
+procedure( scanFile( fileName )
+   response = ""
+   str = t
+   fin = infile(fileName)
+   while(str
+      gets(str fin)
+      if(str then
+         response = strcat(response str)
+      )
+   )
+   response
+)
+
+) ; let

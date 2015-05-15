@@ -1,0 +1,27 @@
+/*
+   Refresh Cadence when files were modified
+*/
+defmethod( Refresh (( gs GitShell ))
+   ;ddsHiRefresh()
+   ddsRefresh(?cellview t ?cdf t ?property t)
+)
+
+
+/*
+
+procedure(CCSrefresh()
+
+   ;; In 1 second, if a "No Data to Refresh" dialog box
+   ;; appears, dismiss it. Also in 1 second, when the
+   ;; "Refresh Data From Disk" appears, OK the form.
+   hiRegTimer("and(boundp('ddsDBox) ddsDBox
+       hiDBoxOK(ddsDBox))
+     and(boundp('ddsRefreshForm) ddsRefreshForm
+       hiFormDone(ddsRefreshForm))" 10)
+   ;; Call the Refresh function
+   ddsHiRefresh()
+)
+
+
+
+*/

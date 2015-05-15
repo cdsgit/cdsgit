@@ -1,0 +1,11 @@
+;Get the fullpath of the gsp including the gs root
+defmethod( FullPath ((  gsp GSpath  ))
+
+   if( !gsp->gs then
+      error("GSpath FullPath: gs object required")
+   )
+
+   fullStr = strcat(gsp->gs->root->str "/" gsp->str)
+   fullGsp = Clone(gsp ?str fullStr)
+   fullGsp
+)

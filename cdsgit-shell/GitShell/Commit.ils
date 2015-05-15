@@ -1,0 +1,35 @@
+defmethod( Commit (( gs GitShell ) commit_log @key (merge nil) )
+
+
+   if( commit_log != "" || merge then
+      ;Write the log to a temporary file
+      tmpFile = makeTempFileName("/tmp/cdsgit")
+      fout = outfile(tmpFile "w")
+      fprintf(fout "%s" commit_log)
+      close(fout)
+
+      commit_cmd = ""
+      if( merge then
+         commit_path = ""
+         commit_cmd = strcat("git commit")
+      else
+         commit_cmd = strcat("git commit -F " tmpFile)
+         commit_path = ""
+         ;commit_path = strcat("-- " gs->path) TODO: Commit path was committing unstaged files in the path
+      )
+
+      if( gs->path && gs->path != "" then
+         syscmd = strcat("cd " gs->root->str " && " commit_cmd " " commit_path)
+
+         result=Cmd(gs syscmd)
+
+         if(!result then
+            Error(gs sprintf(nil "Not a valid path %s\nCommand:%s" gs->path syscmd))
+         )
+      )
+   else
+      Info(gs "Commit message cannot be blank!")
+   )
+
+   t
+)

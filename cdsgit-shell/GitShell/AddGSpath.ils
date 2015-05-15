@@ -1,0 +1,5 @@
+defmethod( AddGSpath (( gs GitShell ) gsp)
+
+   gs->paths = append( gs->paths list(gsp) )
+
+)

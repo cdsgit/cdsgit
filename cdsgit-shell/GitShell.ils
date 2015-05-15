@@ -1,0 +1,93 @@
+defclass( GitShell
+
+   ()
+   (
+      (name     @initform nil @initarg name) ;Name of the object
+      (path     @initform nil @initarg path) ;Path to the object
+      (pathOrig @initform nil @initarg path) ;Path to the object (original used to revert)
+      (dd       @initform nil @initarg dd)   ;Cadence dd object
+      (paths    @initform list() )           ;Collection of GSpath's
+      (libList  @initform nil )              ;A list of the library paths
+
+      ;LCV information
+      (libName  @initform "")
+      (cellName @initform "")
+      (viewName @initform "")
+
+      ;Dialog
+      (verbose  @initform t   @initarg verbose) ;Verbose messages
+      (silent   @initform nil @initarg silent)  ;Do not display dialog boxes
+
+      ;Properties
+      (valid    @initform nil ) ;Is a valid repo (set by Check())
+      (clean    @initform nil ) ;Does the repository have changes?
+      (modified @initform nil ) ;Does the repository have local modifications?
+      (root     @initform nil ) ;Root directory of the repo
+      (url      @initform nil @initarg url ) ;Url
+      (depth    @initform nil ) ;String depth based on dd->type
+      (filter       @initform nil ) ;Number of items to remove from the end of the paths
+      (ideal_filter @initform 3   ) ;Ideal filter depth
+
+      ;Sys Commands
+      (response   @initform nil); Last syscmd response
+      (lastCmd    @initform nil); Last syscmd
+      (exitStatus @initform nil); Exit status of last command
+      (sysErr     @initform nil); Unstaged objects
+
+      ;Git Status
+      (staged     @initform nil); Staged objects
+      (unstaged   @initform nil); Unstaged objects
+      (conflicted @initform nil); Merge Conflicts
+      (revision   @initform nil); Current Revision
+
+      ;Git Branch
+      (branch   @initform nil); The current branch
+      (branches @initform nil); Branches to choose from
+
+   )
+
+)
+
+;GitShell() creates a new GitShell object
+;path- the path to create the shell
+;name- Not really used
+;dd - cadence dd object
+;silent- Do not display popups
+;url- The remote URL used for clone
+;skipRoot - Do not determine the root directory (speed reasons)
+
+procedure( GitShell( @key (path nil) (name nil) (dd nil) (silent t) (url nil) (skipRoot nil) (skipCheck nil) )
+
+   if(!path then
+      error("Must provide a path to GitShell")
+   )
+
+   gs = makeInstance( 'GitShell ?path path ?name name ?dd dd ?silent silent ?url url)
+
+   ;Backup the path
+   gs->pathOrig = path
+
+   if(dd then
+      if(gs->verbose printf("GitShell: dd type-%L\n" dd->type))
+   )
+   Depth(gs)
+
+   ;Validate the path git repository is real
+   if( !skipCheck then
+      Check(gs)
+   else
+      gs->valid = nil
+   )
+
+   ;Find the root git directory
+   if( gs->valid && !skipRoot then
+      Root(gs)
+   )
+
+
+   ;Find cadence libs in the path
+   GetLibs(gs)
+
+   gs
+
+)

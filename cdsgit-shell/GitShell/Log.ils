@@ -1,0 +1,118 @@
+;Retreive git log from path
+;Returns a list for each commit formatted:
+; '( '(sha_id author date log) )
+
+let(
+()
+
+defmethod( Log (( gs GitShell ) @key (branchname "") )
+let( (path)
+
+   path = gs->path
+
+   if( !branchname then
+      Error(gs "GitShell Log: branchname cannot be nil")
+   )
+
+   if(gs->verbose printf("LCBUgitRevs: Reading git log\n"))
+
+   gitLogCmd = strcat("cd " gs->path " && git log --abbrev-commit --date=short --full-history " branchname " -- .")
+
+   response = Cmd(gs gitLogCmd)
+
+   if( response=="" || !response
+      Error(gs sprintf(nil "Path %s has an empty git log\nDo revisions of it exist in the repository?" gs->path))
+   )
+
+   lineList = parseString(response "\n")
+
+   logCount = 0
+
+   revList = list()
+
+   foreach(line lineList
+
+
+      case( GSstrMatch(line)
+
+         ("commit"
+
+            ;Pack up the last commit
+            if(logCount > 0 then
+               gitLog = Strip(GSstr(gitLog))
+               revList = cons(list(gitCommit gitAuthor gitDate gitLog) revList)
+            )
+
+
+            printf("COMMIT\t%s\n" line)
+
+            logCount = logCount + 1
+            gitLog = ""; Clear the log
+
+            rexCompile("commit[ ]*")
+            gitCommit = rexReplace(line "" 0)
+
+            printf("REX COMMIT\t%s\n" gitCommit)
+         )
+         ("author"
+            printf("AUTHOR\t%s\n" line)
+
+            ;Extract the Author name (ignore the email)
+            rexCompile("Author:[ ]*")
+            gitAuthor = rexReplace(line "" 0)
+            rexCompile("[ ]*<[a-zA-Z0-9\\.@]+>")
+            gitAuthor = rexReplace(gitAuthor "" 0)
+
+            printf("REX AUTHOR\t%s\n" gitAuthor)
+
+         )
+         ("date"
+            printf("DATE\t%s\n" line)
+
+            rexCompile("Date:[ ]*")
+            gitDate = rexReplace(line "" 0)
+
+            printf("REX DATE\t%s\n" gitDate)
+         )
+         (t
+            gitLog = strcat(gitLog line)
+         )
+
+      )
+
+      ;splitLine = parseString(line " ")
+
+      ;firstWord = nthelem(1 splitLine)
+
+      if(gs->verbose printf("\t|%s\n" line))
+
+   )
+   ;Pack the last log
+   revList = cons(list(gitCommit gitAuthor gitDate gitLog) revList)
+
+   revList = reverse(revList)
+
+   revList
+);let
+)
+
+;Match a git log string to commit, author or date
+procedure( GSstrMatch(str)
+
+result = nil
+
+   match = rexMatchp("^commit [a-f0-9]+$" str)
+   if(match result = "commit" )
+
+   match = rexMatchp("Author: [a-zA-Z ]" str)
+   if(match result = "author" )
+
+   match = rexMatchp("Date:[ ]*[0-9]+-[0-9]+-[0-9]+$" str)
+   if(match result = "date" )
+
+
+result
+
+)
+
+);let

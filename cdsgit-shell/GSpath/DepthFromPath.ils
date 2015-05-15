@@ -1,0 +1,16 @@
+;Determine the depth of the current object from the gs path
+
+defmethod( DepthFromPath ((  gsp GSpath  ))
+
+   gspL = GSpath(gsp->gs->path)
+   gspR = gsp
+
+   if( gspL && gspL != "" && gspR && gspR != "" then
+      resultStr=Convolve(gspR gspL)
+      if( gsp->verbose printf("\tResult %s\n" resultStr) )
+      depth = Depth(GSpath(resultStr))
+   else
+      depth = Depth(gsp)
+   )
+)
+

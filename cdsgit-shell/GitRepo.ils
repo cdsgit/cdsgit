@@ -1,0 +1,31 @@
+defclass( GitRepo
+   ()
+   (
+      (gsList @initform list())
+      (root   @initarg root @initform nil)
+   )
+)
+
+;Create a new Repo
+procedure( GitRepo(gs)
+
+   if( !gs->root then
+      Error(gs "No root directory found for git-shell")
+   )
+
+   gr = makeInstance( 'GitRepo ?root gs->root)
+
+   AddShell(gr gs)
+
+)
+
+
+defmethod( AddShell (( gr GitRepo) gs)
+
+   if(gs->root != gr->root then
+      error("GitRepo AddShell: Invalid shell added to repo")
+   )
+
+   append(gr->gsList list(gs))
+
+)

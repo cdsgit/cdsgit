@@ -1,0 +1,5 @@
+;Remove everything but the lib from the path
+defmethod( Trim (( gsp GSpath ) @key (loop 1) (reverse t))
+
+
+)

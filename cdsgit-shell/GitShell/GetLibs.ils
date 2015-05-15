@@ -1,0 +1,23 @@
+;Find all cadence libraries in the path
+defmethod( GetLibs (( gs GitShell ))
+
+   gs->libList = list()
+
+   if( gs->root then
+
+      ddList = ddGetLibList()
+      pathList = list()
+
+      foreach( dd ddList
+         libPath = GSpath(ddGetObjReadPath(dd))
+         if( IsInPath(libPath gs->root) then
+            if( gs->verbose printf("GitShell GetLibs: Adding %s to libList\n" libPath->str ) )
+
+            gs->libList = append(gs->libList list(libPath) )
+         )
+      )
+
+   )
+
+   gs
+)

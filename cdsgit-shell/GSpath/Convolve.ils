@@ -1,0 +1,92 @@
+/*
+The algorithm takes GSP and P and aligns the right most chars (sort of)
+It then slides P to the left and compares each char.
+When all of the overlapping chars of G and P match, it then takes the substring
+of GSP based on that index
+
+
+ strR    1 2 3 4
+ strL          1 2 i=1 does G3==P1 and G4==P2
+             1 2   i=2 does G2==P1 and G3==P2
+           1 2     i=3 does G1==P1 and G2==P2
+         1 2       i=4 does G1==P2
+
+In reality, strL starts at i=3 to avoid a substring match
+
+*/
+defmethod( Convolve (( gspR GSpath ) gspL )
+let( (i)
+   strL  = gspL
+   strR  = gspR
+
+   if( GetChar(strL 1)!="/" || GetChar(strR 1) == "/" then
+      error("GSpath Convolve: strL must be a full path, strR must be a relative path\nstrL%L strR%L" strL strR)
+   )
+
+   /* Modified, should always be full L and relative R
+   ;Remove leading and trailing "/"
+   Strip(strL ?str_begin nil ?str_end t ?rexStr "/")
+   Strip(strR ?str_begin t ?str_end nil ?rexStr "/")
+   */
+
+   if(gsp->verbose printf("String Convolve\n\tstrL-%s\n\tstrR-%s\n" strL->str strR->str) )
+
+   lenL = Length(strL)
+   lenR = Length(strR)
+
+
+   ;i represents an index of GSP where i=1 is the rightmost char
+   ;Start with P shifted to the left if GSP is longer
+   ;to avoid a GSP substring match
+   if(lenR > lenL then
+      i = lenR-lenL+1
+   else
+      i=1
+   )
+   fullmatch = nil
+
+   if( gsp->verbose printf("\tlenL-%d lenR-%d\n" lenL lenR) )
+
+   while( !fullmatch && i<=lenR
+
+      ;Stop j either at the left of GSP or the left of P, whichever is shorter
+      if(lenL < lenR-(i-1) then
+         lenj = lenL
+      else
+         lenj = lenR-(i-1)
+      )
+
+      j=1
+      fullmatch = t
+      while( fullmatch && j<=lenj
+
+         cA = GetChar(strL lenL-(j-1) )
+         cB = GetChar(strR lenR-(i-1)-(j-1))
+         if( gsp->verbose printf("\t\ti-%d j-%d lenj-%d cA-%s cB-%s\n" i j lenj cA cB) )
+         if(cA != cB then
+            fullmatch = nil
+         else
+            j=j+1
+         )
+      )
+
+
+      if( fullmatch then
+         matchIndex = lenR-(i-2)
+      else
+         i=i+1
+      )
+   )
+
+   if( !fullmatch then
+      result = strR->str
+   else
+      result = substring(strR->str matchIndex)
+      if( matchIndex > lenR then
+         result = ""
+      )
+   )
+
+   result = GSpath(result)
+)
+)

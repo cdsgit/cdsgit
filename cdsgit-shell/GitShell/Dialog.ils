@@ -1,0 +1,20 @@
+;Display a Y/N dialog
+
+defmethod( Dialog (( gs GitShell ) infoStr)
+
+   response = hiDisplayAppDBox(?name 'gitShellInfoForm
+      ?dboxBanner "CdsGit GitShell Prompt"
+      ?dboxText infoStr
+      ?buttonLayout 'UserDefined
+      ?buttons list("Yes" "No")
+      ?callback list(nil nil)
+      ;?dialogStyle 'modeless
+   )
+
+   if(response == 1 then
+      response = t
+   else
+      response = nil
+   )
+
+)

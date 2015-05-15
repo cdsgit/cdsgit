@@ -1,0 +1,24 @@
+;Test if a path is a cadence object
+defmethod( IsCadence (( gsp GSpath ))
+
+   ;Get the root directory and then search for a master.tag
+   tmp_gsp = GSpath(gsp->str)
+
+   rootdir = Trim(tmp_gsp)
+
+   ;Only run if the directory exists
+   if( isDir(rootdir) then
+      syscmd = strcat("find " rootdir " -maxdepth 3 -name master.tag -print -quit")
+      response = Cmd(gsp->gs syscmd)
+   else
+      response = nil
+   )
+
+   result = nil
+   if(response && response != ""
+      result = t
+   )
+
+   result
+
+)

@@ -1,0 +1,49 @@
+/*
+Branch() Multipurpose interface to the branch command
+
+   args - arguments to pass to the branch command
+
+   showCurrent - show the current branch in the list of branches
+*/
+
+
+defmethod( Branch (( gs GitShell ) @key (args "") (showCurrent t) )
+
+
+   gs->branches = list()
+
+   syscmd = strcat("cd " gs->root->str " && git branch " args )
+
+   result=Cmd(gs syscmd)
+
+   if(!result then
+      Error(gs sprintf(nil "Not a valid path %s\nCommand:%s" gs->root->str syscmd))
+   else
+
+      foreach(line parseString(result "\n")
+
+         ;TODO: replace this with regexp
+         bline = parseString(line " ")
+
+         on_branch = nil; Is bname the current branch
+         if( length(bline) ==1 then
+            bname = car(bline)
+         else
+            on_branch = t
+            bname = cadr(bline)
+            gs->branch = bname
+         )
+
+         if( showCurrent || !on_branch then
+            gs->branches = append(gs->branches list(bname))
+         )
+
+      )
+
+
+   )
+
+
+   t
+
+)

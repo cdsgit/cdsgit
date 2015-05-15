@@ -1,0 +1,6 @@
+;Get the depth
+defmethod( ToList (( gsp GSpath))
+
+   list(gsp->indexStatus gsp->treeStatus gsp->str gsp->conflictStatus)
+
+)

@@ -1,0 +1,54 @@
+defclass( GSpath
+   ( GSstr )
+   (
+      (depth          @initform nil )
+      (indexStatus    @initform nil @initarg indexStatus )
+      (treeStatus     @initform nil @initarg treeStatus  )
+      (conflictStatus @initform nil )
+      (status         @initform ""  )
+      (gs             @initform nil @initarg gs          ) ;GitShell object
+      (verbose        @initform nil )
+      (isFile         @initform nil @initarg isFile ) ; Is the path a File
+      (isDir          @initform nil @initarg isDir  ) ; Is the path a Directory
+      (valid          @initform nil ); Is the path a valid file or directory
+      (libPath        @initform nil ); (optional) the path to the library the path is in
+      (libDepth       @initform nil ); (optional) the depth from the gs-root to the libPath
+      (pathDepth      @initform nil ); (optional) the depth from the library path to the object
+   )
+)
+
+;
+procedure( GSpath(str @key (indexStatus nil) (treeStatus nil) (gs nil) )
+
+   newGsp = makeInstance( 'GSpath
+      ?str str
+      ?indexStatus    indexStatus
+      ?treeStatus     treeStatus
+      ?gs gs
+   )
+
+   Type(newGsp)
+
+   newGsp
+
+)
+
+;Create a copy of a gsp object
+defmethod( Clone ((gsp GSpath) @key (str gsp->str) )
+
+   gsp_clone = GSpath( str
+      ?indexStatus gsp->indexStatus
+      ?treeStatus gsp->treeStatus
+      ?gs gsp->gs
+   )
+
+   gsp_clone->libDepth  = gsp->libDepth
+   gsp_clone->pathDepth = gsp->pathDepth
+   gsp_clone->libPath   = gsp->libPath
+   gsp_clone->verbose   = gsp->verbose
+   gsp_clone->depth     = gsp->depth
+
+   Type(gsp_clone)
+
+   gsp_clone
+)

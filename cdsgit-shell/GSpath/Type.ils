@@ -1,0 +1,15 @@
+;Determing if the path is a file or directory
+defmethod( Type ((gsp GSpath))
+
+      gsp->isDir  = isDir(gsp->str)
+      gsp->isFile = isFile(gsp->str)
+
+      if( gsp->isDir || gsp->isFile then
+         gsp->valid = t
+      else
+         gsp->valid = nil
+      )
+      if( gsp->isDir && gsp->isFile then
+         error("GSpath Type: Path %s is a file and directory! How can this be?!?!" gsp->str)
+      )
+)

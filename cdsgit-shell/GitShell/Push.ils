@@ -1,0 +1,19 @@
+/*
+   Push to remote
+
+*/
+defmethod( Push (( gs GitShell ) @key (remote "origin") (args ""))
+	;Push all branches
+	if( args == "" then
+		args = "HEAD"
+	)
+   syscmd = strcat("cd " gs->root->str " && git push " remote " " args)
+   result=Cmd(gs syscmd)
+
+   if(!result then
+      Error(gs sprintf(nil "Push failed\nCommand:%s\nResponse%s" syscmd result))
+   else
+      Info(gs result)
+   )
+
+)

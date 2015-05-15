@@ -1,0 +1,31 @@
+;Determine the filter depth from the dd object
+defmethod( Depth (( gs GitShell ))
+
+
+   if( gs->dd then
+      case( gs->dd->type
+         ('ddLibType
+            gs->depth = "Library"
+            gs->ideal_filter = 3
+         )
+         ('ddCellType
+            gs->depth = "Cell"
+            gs->ideal_filter = 2
+         )
+         ('ddViewType
+            gs->depth = "View"
+            gs->ideal_filter = 1
+         )
+         (t
+            Error(gs "Depth(gs) failed: dd->type is unknown!")
+         )
+      )
+   else
+      gs->depth = "Repository"
+      gs->ideal_filter = 0
+   )
+
+
+   if(gs->verbose printf("Depth set to %L\n" gs->depth))
+
+)

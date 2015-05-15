@@ -1,0 +1,30 @@
+;Set the filter depth based on gs->depth
+defmethod( SetFilter (( gs GitShell ))
+
+   gs->path = gs->pathOrig
+
+   case( gs->depth
+      ("Repository"
+         gs->filter = 3
+         gs->path = gs->root->str
+      )
+      ("Library"
+         gs->filter = 3
+      )
+      ("Cell"
+         gs->filter = 2
+      )
+      ("View"
+         gs->filter = 1
+      )
+      ( "File"
+         gs->filter = 0
+      )
+      ( t
+         gs->filter = 0
+      )
+   )
+
+   if(gs->verbose printf("Filter set to %L\n" gs->filter))
+
+)

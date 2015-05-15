@@ -1,0 +1,17 @@
+/*
+Initialize a Git repository
+*/
+
+
+defmethod( Init (( gs GitShell ) @key (args "") )
+
+   if( !gs->path || !isDir(gs->path) then
+      Error(gs sprintf(nil "GitShell Init: %L is not a directory" gs->path) )
+   )
+
+   syscmd = strcat("cd " gs->path " && git init " args)
+
+   result=Cmd(gs syscmd)
+
+
+)

@@ -1,0 +1,5 @@
+;Open up the difftool based on the path
+defmethod( Diff (( gsp GSpath))
+
+
+)

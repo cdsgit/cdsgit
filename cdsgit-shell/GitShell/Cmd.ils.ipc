@@ -1,0 +1,39 @@
+
+
+;Run a system process and return the result
+;See Interprocess Communication SKILL functions
+defmethod( Cmd (( gs GitShell ) sysCommand)
+
+   if(gs->verbose && sysCommand printf("CMD\n%s\nCMDEND\n",sysCommand))
+
+   gs->lastCmd = sysCommand
+
+   cid=ipcBeginProcess(sysCommand)
+
+   ipcWait(cid 30 5);Max wait of 5s
+
+   gs->exitStatus = cid->exitStatus
+
+
+   if(gs->exitStatus==0 then
+
+      response = ""
+      str = t
+      while(str
+         str=ipcReadProcess(cid)
+         if(str then
+            response = strcat(response str)
+         )
+      )
+   else
+      response = nil
+   )
+
+   gs->response = response
+
+   if(gs->verbose && response printf("RESPONSE:\n%s\nRESPONSEEND\n",response))
+
+   response
+
+)
+

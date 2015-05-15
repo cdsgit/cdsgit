@@ -1,0 +1,20 @@
+/*
+   Push to remote
+
+*/
+defmethod( Fetch (( gs GitShell ) @key (remote "origin") (args ""))
+
+   syscmd = strcat("cd " gs->root->str " && git fetch " remote " " args)
+   result=Cmd(gs syscmd)
+
+   if(!result then
+      Error(gs sprintf(nil "Fetch failed\nCommand:%s\nResponse%s" syscmd result))
+   else
+      if( result == "" then
+         Info(gs "Fetch Complete (nothing to fetch)")
+      else
+         Info(gs result)
+      )
+   )
+
+)

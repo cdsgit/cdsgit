@@ -1,0 +1,32 @@
+/*
+   Pull from remote
+
+   remote = the remote url
+   args - arugments to pass
+   resolve - open the merge resolve form if fail
+*/
+defmethod( Pull (( gs GitShell ) @key (remote "origin") (args "") (resolve t))
+
+   ;Get the current branch
+   Branch(gs)
+
+   syscmd = strcat("cd " gs->root->str " && git pull " remote " " gs->branch " " args)
+   result=Cmd(gs syscmd)
+
+   if(!result then
+      Error(gs sprintf(nil "Pull failed\nCommand:%s\nResponse%s" syscmd result))
+   else
+      Info(gs result)
+   )
+   if( resolve && rexMatchp("Automatic merge failed; fix conflicts and then commit the result" result) then
+      response = Dialog(gs "Merge failed due to conflicts\nOpen the Merge confilt resolve form?")
+      if(response then
+         gs->path = gs->root->str
+         CGmergeResolveForm(gs)
+      else
+         Error(gs "Pull failed due to unresolved conflicts")
+      )
+   )
+   Refresh(gs)
+
+)

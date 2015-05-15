@@ -1,0 +1,18 @@
+;Get the depth
+defmethod( Depth (( gsp GSpath))
+
+   depth = 0
+   clast = ""
+
+   len = Length(gsp)
+
+   for( cindex 1 len
+      c = GetChar(gsp cindex)
+      if( c=="/" && clast!="/" depth = depth+1)
+      clast = c
+   )
+
+   gsp->depth = depth
+
+   depth
+)

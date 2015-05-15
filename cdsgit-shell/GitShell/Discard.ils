@@ -1,0 +1,24 @@
+defmethod( Discard (( gs GitShell ))
+
+
+   Status(gs ?showInfo nil)
+
+   Info(gs "Discard needs to be worked on")
+
+   ;TODO
+   ;Add git clean -df -- . && git checkout -- .
+
+
+   if( gs->clean then
+      Info(gs strcat("Nothing to discard in " gs->path) )
+   else
+      response = Dialog(gs strcat("All unstaged changes in " gs->path " will be lost!\nProceed?") )
+
+      if(response then
+         Cmd(gs strcat("cd " gs->path " && git checkout -- ." ) )
+         Refresh(gs)
+      )
+   )
+
+   t
+)

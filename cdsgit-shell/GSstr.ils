@@ -1,0 +1,65 @@
+defclass( GSstr
+   ()
+   (
+      (str    @initform nil @initarg str)
+      (length @initform nil)
+   )
+)
+
+procedure( GSstr(str)
+
+   gss = makeInstance( 'GSstr ?str str)
+
+)
+
+;Reverse a string
+defmethod( Reverse (( gss GSstr))
+
+   resultStr=""
+   len = Length(gss)
+
+   for(i 1 len
+      resultStr = strcat(resultStr GetChar(gss len-(i-1)) )
+   )
+   gss->str = resultStr
+
+   resultStr
+)
+
+
+defmethod( Length (( gss GSstr))
+   len = strlen(gss->str)
+   gss->length = len
+   len
+)
+
+defmethod( GetChar (( gss GSstr) index @key (str nil) )
+
+   if( !str str = gss->str)
+
+   if( index <1            error("GSstr GetChar: index must be > 0") )
+   if( index > strlen(str) error("GSstr GetChar: String length exceeded") )
+   if( !str                error("GSstr GetChar: str is nil") )
+
+   if(!getchar(str index) break())
+   c = sprintf(nil "%s" getchar(str index) )
+   c
+)
+
+;Remove whitespace from string
+defmethod( Strip (( gss GSstr ) @key (str_begin t) (str_end t) (rexStr " \t\n") )
+
+   str = gss->str
+
+   if( str_begin then
+      rexObj = rexCompile( strcat("^[" rexStr "]*") )
+      str = rexReplace( str "" 0)
+   )
+   if( str_end then
+      rexObj = rexCompile( strcat("[" rexStr "]*$") )
+      str = rexReplace( str "" 0)
+   )
+   gss->str = str
+
+   str
+)

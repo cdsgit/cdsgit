@@ -1,0 +1,151 @@
+
+let(
+
+()
+
+;Parse Result of GitStatus
+;showInfo will suppress "Area is Clean" message
+defmethod( Status (( gs GitShell ) @key (showInfo t) )
+
+   /* TODO
+      --ignored "!!" could be used
+   */
+
+   gs->clean = nil
+   gs->modified = nil
+   gs->paths = list(); clear existing gsp's
+
+   status_cmd =  strcat("cd " gs->path " && git status --porcelain .")
+   response = Cmd(gs status_cmd)
+
+   if(!response then
+      Error(gs sprintf(nil "git status on path %s failed" gs->path))
+   )
+
+   if(response=="" then
+      if( showInfo then
+         Info(gs sprintf(nil "Path %s is clean" gs->path))
+      )
+      gs->clean = t
+   else
+
+      response_list = parseString(response "\n")
+
+
+      foreach(line response_list
+
+         if(gs->verbose printf("%s\n" line))
+
+         ;Status (T=new file type)
+         regexp = "^[ MADRCU?]+[ MADRCUT?]+[ ]+"
+         matched = rexMatchp(regexp,line)
+         gitstatus = rexSubstitute("\\0")
+
+         ;Path
+         matched = rexMatchp(regexp,line)
+         gitpath = rexReplace(line,"",0)
+
+         ;Only untracked files are not modified
+         if(gitstatus != "??" gs->modified = t)
+
+         if(gs->verbose printf("\tGitShell Status: Matched %L Status %s Path %s\n" matched gitstatus gitpath))
+
+         ;Split up each char of the status
+         indexStatus = getchar( gitstatus 1)
+         treeStatus  = getchar( gitstatus 2)
+
+         gsp = GSpath(gitpath ?indexStatus indexStatus ?treeStatus treeStatus ?gs gs)
+         GetLib(gsp)
+         if(gs->verbose printf("\tGitShell Status: path %L lib %L libDepth %L depth %L\n" gsp->str gsp->libPath->str gsp->libDepth gsp->pathDepth) )
+         AddGSpath(gs gsp)
+      )
+
+   )
+
+   StatusToList(gs)
+
+   t
+
+)
+
+defmethod( StatusToList (( gs GitShell ))
+let( (path)
+
+   gs->staged     = list()
+   gs->unstaged   = list()
+   gs->conflicted = list()
+
+   SetFilter(gs); Set the filter based on depth
+
+   foreach( gsp gs->paths
+
+      ;Filter the path
+      gsp_tmp = Clone(gsp)
+
+      trim_depth  = gs->filter - (3 - gsp_tmp->pathDepth)
+
+      Trim(gsp_tmp ?loop trim_depth)
+      path = gsp_tmp->str
+
+      if( gs->verbose printf("\tPath %s Filter %L Trim %L NewPath %s\n" gsp->str gs->filter trim_depth gsp_tmp->str) )
+
+      GSparseStatus(gsp_tmp)
+      gsList = gsp_tmp->status
+      statusList = get(gs,gsList)
+
+      ;Only add the path if it isn't already there
+      existing_paths = setof( slist statusList nthelem( 3 slist ) == gsp_tmp->str)
+
+      addToList = nil
+
+      if( !existing_paths then
+         addToList = t
+      else
+         indexStatusE = nthelem(1 car(existing_paths) )
+         treeStatusE  = nthelem(2 car(existing_paths) )
+         ;Check if the status matches
+         if( gsp->indexStatus != indexStatusE || gsp->treeStatus != treeStatusE then
+            addToList = t
+         )
+         addToList = nil
+      )
+
+      if(addToList then
+         if( gs->verbose printf("\tStatusToList-Adding %L\n" ToList(gsp_tmp) ) )
+         statusList=append(statusList list( ToList(gsp_tmp) ) )
+         putprop(gs,statusList,gsList)
+      )
+
+   )
+
+   ;Append all merge conflicts to Unstaged
+   gs->unstaged = append(gs->unstaged gs->conflicted)
+
+);let
+)
+
+
+;Returns "staged" "unstaged" based on status
+procedure( GSparseStatus(gsp)
+let( (indexStatus treeStatus)
+
+   indexStatus = gsp->indexStatus
+   treeStatus  = gsp->treeStatus
+
+   cond(
+      ( rexMatchp("[ADU]" indexStatus) && rexMatchp("[ADU]" treeStatus)
+         gsp->status = "conflicted"
+         gsp->conflictStatus = t
+      )
+      ( rexMatchp("[ ?]" indexStatus)
+         gsp->status = "unstaged"
+      )
+      ( t
+         gsp->status = "staged"
+      )
+   )
+   gsp
+)
+
+)
+);

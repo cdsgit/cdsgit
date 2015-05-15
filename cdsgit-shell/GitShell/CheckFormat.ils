@@ -1,0 +1,17 @@
+/*
+CheckFormat(GitShell(?path "../cdsgit-testrepo") "ASDF")
+
+Checks if a given refname is acceptable, and exits with a non-zero status if it is not.
+*/
+defmethod( CheckFormat (( gs GitShell ) refname)
+
+   if( refname && refname != "" then
+      response = Cmd(gs strcat("git check-ref-format --branch \"" refname "\"") )
+
+   else
+      Error(gs "GitShell CheckFormat: refname must be a string")
+   )
+   response
+
+)
+

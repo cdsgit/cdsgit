@@ -1,0 +1,16 @@
+defmethod( Root (( gs GitShell ))
+
+   syscmd = strcat("cd " gs->path " && git rev-parse --show-toplevel")
+
+   result=Cmd(gs syscmd)
+
+   if(!result then
+      Error(gs sprintf(nil "Not a valid path %s\nCommand:%s" oppath syscmd))
+   else
+      gss_result=GSpath(result)
+      Strip(gss_result)
+      gs->root = gss_result
+   )
+
+   t
+)

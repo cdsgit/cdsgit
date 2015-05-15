@@ -1,0 +1,23 @@
+/*
+Checkout a revision
+   gitSHA - the SHA identifier
+   oppath - the path to checkout
+   args   - Optional arguments
+
+   if args is given, other argments are ignored
+
+*/
+defmethod( Checkout (( gs GitShell ) gitSHA @key (oppath ".") (args nil) )
+
+   if( args then
+      Cmd(gs strcat("cd " gs->path " && git checkout " args) )
+   else
+      if( gitSHA && gitSHA !="" then
+         Cmd(gs strcat("cd " gs->path " && git checkout " gitSHA " -- " oppath) )
+      else
+         Error(gs "GitShell Checkout: Must select a valid SHA")
+      )
+   )
+   Refresh(gs)
+   t
+)

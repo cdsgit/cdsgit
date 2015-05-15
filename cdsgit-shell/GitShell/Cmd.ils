@@ -1,0 +1,61 @@
+
+
+let(
+()
+
+;Run a system process and return the result
+;See Interprocess Communication SKILL functions
+defmethod( Cmd (( gs GitShell ) sysCommand @key (ignoreFatal nil))
+
+   tmpFile = makeTempFileName("/tmp/cdsgit")
+
+   sysCommand = strcat(sysCommand " &> " tmpFile)
+
+   if(gs->verbose && sysCommand printf("CMD\n%s\nCMDEND\n",sysCommand))
+
+   gs->lastCmd = sysCommand
+
+   gs->exitStatus = system(sysCommand)
+
+   if(gs->exitStatus==0 then
+
+      response = scanFile(tmpFile)
+   else
+      response = nil
+      gs->sysErr = scanFile(tmpFile)
+   )
+
+   deleteFile(tmpFile)
+
+   gs->response = response
+
+   if(gs->verbose && response printf("EXITSTATUS=%L\nRESPONSE:\n%s\nRESPONSEEND\n",gs->exitStatus,gs->response))
+
+
+   if( !ignoreFatal then
+      if( response && response != "" then
+         responseParse = parseString(response "\n")
+
+         if( pcreMatchp( "^fatal" car(responseParse)) || pcreMatchp( "^error" car(responseParse))  then
+            Error(gs sprintf(nil "Git command returned fatal:\n%s" response))
+         )
+      )
+   )
+
+   response
+)
+
+procedure( scanFile( fileName )
+   response = ""
+   str = t
+   fin = infile(fileName)
+   while(str
+      gets(str fin)
+      if(str then
+         response = strcat(response str)
+      )
+   )
+   response
+)
+
+) ; let

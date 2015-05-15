@@ -1,0 +1,42 @@
+;Return t/nil if the current path is within otherPath
+;Assumes FULLY qualified path, not relative!
+defmethod( IsInPath (( gsp GSpath) otherPath)
+
+ogsp = nil
+
+if( classp( otherPath 'GSpath ) then
+   ogsp = otherPath
+else
+   ogsp = GSpath(otherPath)
+)
+
+
+if( GetChar(gsp 1)!="/" || GetChar(ogsp 1) !="/" then
+   error("GSpath IsInPath: Paths not be relative\nPath-%s OtherPath-%s" gsp->str otherPath->str)
+)
+
+matched = nil
+if( Length(gsp) < Length(ogsp) then ;Path cannot be within the other if it is shorter
+   matched = nil
+else
+
+   matched = t
+   for(i 1 Length(ogsp)
+
+      cho = GetChar(ogsp i)
+      chi = GetChar(gsp i)
+
+      if( cho != chi then
+         matched = nil
+      )
+
+   )
+)
+
+if( gsp->verbose then
+   printf("\tGSpath IsInPath: %L %s is in %s\n" matched gsp->str ogsp->str )
+)
+
+matched
+
+)

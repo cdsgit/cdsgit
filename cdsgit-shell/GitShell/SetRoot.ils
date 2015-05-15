@@ -1,0 +1,9 @@
+;Set the gs->path to the root directory
+defmethod( SetRoot (( gs GitShell ))
+
+   gs->path     = gs->root->str
+   gs->pathOrig = gs->root->str
+   gs->dd = nil
+   Depth(gs)
+
+)

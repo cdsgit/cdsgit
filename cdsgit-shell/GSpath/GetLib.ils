@@ -1,0 +1,34 @@
+;Get the library path from the gs object
+defmethod( GetLib (( gsp GSpath ) )
+
+   if( gsp->gs then
+      fullPath = FullPath( gsp )
+
+      foreach( lib gsp->gs->libList
+         if( IsInPath( fullPath lib) then
+            gsp->libPath = lib
+         )
+      )
+   else
+      gsp->libPath = nil
+   )
+
+   if( gsp->libPath then
+
+      gsp->libDepth = Depth(Subtract(gsp->libPath gsp->gs->root))
+
+      ;Should use DepthFromPath here
+      dbPath = Convolve(gsp gsp->libPath); Relative path from the library
+      gsp->pathDepth = Depth(dbPath)
+
+   )
+
+   ;Not inside a cadence library
+   ;Default it to show the full path
+   if( !gsp->libPath then
+      gsp->libDepth  = 0
+      gsp->pathDepth = 0
+      gsp->libPath   = GSpath("")
+   )
+
+)
