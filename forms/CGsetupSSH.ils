@@ -1,0 +1,65 @@
+procedure( CGsetupSSHform()
+
+   gs = GitShell(?path "" )
+
+   ;#####Generate SSH key
+
+   sshKeyPath = strcat("~/.ssh/id_rsa")
+   sshKeygenCmd = strcat("ssh-keygen -t rsa -N \"\" -f " sshKeyPath)
+
+   if(!isFile(sshKeyPath) then
+
+      promptStr = strcat("SSH key " sshKeyPath " does not exist, creating one for you in " sshKeyPath "\n Using command " sshKeygenCmd)
+
+      response = Dialog( gs promptStr)
+
+      if( response
+         Cmd(gs strcat("dirname " sshKeyPath " | xargs mkdir -p"))
+         Cmd(gs sshKeygenCmd)
+      )
+
+   )
+
+   sshPubKeyPath = strcat(sshKeyPath ".pub")
+
+   if( isFile(sshKeyPath) then
+
+      fin = infile(sshPubKeyPath)
+      gets(sshKeyStr fin)
+
+
+      importSkillVar(cdsGitAppName)
+      formHeader = sprintf(nil "%s SSH Key" cdsGitAppName)
+
+      tf_ssh = hiCreateMLTextField(
+            ?name 'tf_ssh
+            ?value sshKeyStr
+            ?editable t
+            ?enableWordWrap t
+            ?hasHorizontalScrollbar nil
+            )
+
+      ;;Define form fields
+      l_form = hiCreateLabel(   ?name    'l_form
+               ?labelText       strcat( "Path to SSH Key: " sshPubKeyPath "\nThe following is your SSH key:")
+      ); labelField
+
+      cgsetupssh_form = hiCreateAppForm(
+         ?name    'cgsetupssh_form
+         ?formTitle formHeader
+         ?fields
+            list(
+               list( l_form 10:10   475:35 200 )
+               list( tf_ssh  10:60  475:200 200 )
+            )
+            ?buttonLayout  'OKCancelDefApply
+            ?initialSize   t
+      )
+
+      hiDisplayForm(cgsetupssh_form)
+
+   else
+      Error(gs strcat("Could not open %s" sshKeyPath) )
+   )
+
+)

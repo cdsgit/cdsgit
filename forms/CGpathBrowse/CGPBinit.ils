@@ -1,0 +1,30 @@
+/*
+Initialize a Git Repository
+CGPBinitForm()
+*/
+procedure( CGPBinitForm()
+
+   importSkillVar(cdsGitAppName)
+
+   formTitle = sprintf(nil "%s Initialize a Repository" cdsGitAppName )
+   formCB = "CGPBinitFormCB()"
+
+   CGpathBrowseForm( nil ?formTitle formTitle ?formCB formCB ?formMode "directoryOnly" ?formLabel "Select a Path in which to Initialize a Git Repository")
+)
+
+procedure( CGPBinitFormCB()
+
+   gsinit_path = Strip(GSstr(cgpathbrowseform->sf_pathname->value))
+
+   gs = GitShell( ?path gsinit_path ?skipCheck t)
+
+   Init(gs)
+   Check(gs)
+
+   if( gs->valid then
+      Info(gs sprintf(nil "Git Repository Initialized in %s" gsinit_path))
+   else
+      Error(gs sprintf(nil "Could not Initialize a Git Repository in %s\nCheck that you have permissions" gsinit_path))
+   )
+
+)

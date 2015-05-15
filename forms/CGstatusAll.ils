@@ -1,0 +1,106 @@
+procedure( CGstatusAllForm()
+
+   importSkillVar(cdsGitAppName)
+
+   formHeader = sprintf(nil "%s Workarea Repositories" cdsGitAppName)
+
+   grid = Gridder()
+
+   totalW = 6
+   gridW = grid->width
+
+   selectCB = "CGstatusAllCB()"
+   refreshCB = "CGstatusAllRefreshCB()"
+
+   ;TODO - Add branch to status
+   reportHeader = list(
+      list( "Path"   5*gridW 'left 'string t )
+      list( "Status" 1*gridW 'left 'string t )
+      )
+
+   l_repos = hiCreateLabel( ?name 'l_repos ?labelText "Git Repositories")
+
+   rf_repos = hiCreateReportField(
+            ?name 'rf_repos
+            ?headers reportHeader
+            ?choices CGstatusAllGetStatus()
+            ?selectMode 'single
+            ?doubleClickCB selectCB
+         )
+
+   b_refresh = hiCreateButton(
+      ?name 'b_refresh
+      ?buttonText "Refresh"
+      ?callback refreshCB
+   )
+
+   b_select_repo = hiCreateButton(
+      ?name 'b_select_repo
+      ?buttonText "Status"
+      ?callback selectCB
+   )
+
+
+   NewField(grid ?field l_repos       ?x 1 ?y 1  ?w totalW ?h 1 ?prompt 10)
+   NewField(grid ?field rf_repos      ?x 1 ?y 2  ?w totalW ?h 4 ?prompt 10)
+   NewField(grid ?field b_refresh     ?x 1 ?y 6  ?w totalW ?h 1 ?prompt 10)
+   NewField(grid ?field b_select_repo ?x 1 ?y 7  ?w totalW ?h 1 ?prompt 10)
+
+
+   cgstatusall_form = hiCreateAppForm(
+               ?name 'cgstatusall_form
+               ?formTitle formHeader
+               ?callback ""
+               ?fields         grid->fields
+               ?attachmentList grid->attachmentList
+               ?initialSize    FormSize(grid)
+               ?minSize        FormSize(grid)
+               ?buttonLayout  'OKCancelDef
+         )
+
+
+
+   hiDisplayForm(cgstatusall_form)
+
+)
+
+
+procedure( CGstatusAllCB()
+      fvalues  = cgstatusall_form->rf_repos->value
+      fchoices = cgstatusall_form->rf_repos->choices
+
+      if(fvalues then
+         fvalue = car(fvalues)+1
+         fchoice = car(nthelem(fvalue fchoices))
+
+         gs = GitShell(?path fchoice)
+         CGstatusForm(gs)
+      )
+
+)
+
+procedure( CGstatusAllGetStatus()
+   gitList = CGgitLibs()
+
+   rootList = list()
+   foreach( rootPath gitList
+      if( !setof( strlist rootList car(strlist)==rootPath->str) then
+
+         gs = GitShell(?path rootPath->str)
+         Status(gs ?showInfo nil)
+
+         statusStr = "modified"
+         if( gs->clean then
+            statusStr = "clean"
+         )
+
+         rootList = append(rootList list(list(rootPath->str statusStr)) )
+      )
+   )
+   rootList
+)
+
+procedure( CGstatusAllRefreshCB()
+
+   cgstatusall_form->rf_repos->choices=CGstatusAllGetStatus()
+)

@@ -1,0 +1,67 @@
+/*
+ CGpathBrowseForm(nil )
+
+ Modes
+
+anyFile any file, whether it exists or not This option is typically used for "Save As" dialog boxes.
+existingFile an existing file This option is typically used for "Open File" dialog boxes.
+existingFiles zero or more existing files This option is typically used for "Open File" dialog boxes.
+directory a directory; the file dialog displays both files and directories
+directoryOnly a directory;
+
+*/
+
+
+procedure( CGpathBrowseForm(gs @key (grid nil) (formTitle "") (formLabel "Select a Path") (formCB "") (formMode "directoryOnly") )
+
+   if( !grid then
+      grid = Gridder()
+   )
+
+   sf_pathname = hiCreateStringField(
+      ?name 'sf_pathname
+      ?prompt ""
+      ?value ""
+      ?defValue ""
+      ?editable t
+   )
+
+   b_browse = hiCreateFormButton(
+      ?name       'myFileBrowseBtn
+      ?buttonText "Browse"
+      ?callback  sprintf(nil "CGpathBrowseFD(\"%s\")" formMode)
+   )
+
+   NewField(grid ?field sf_pathname ?appendField t ?w 5 ?h 1 ?frame t ?frameLabel formLabel ?frameName "fr_pathname" )
+   NewField(grid ?field b_browse    ?appendField t ?w 5 ?h 1 )
+
+
+   cgpathbrowseform = hiCreateAppForm(
+               ?name 'cgpathbrowseform
+               ?formTitle formTitle
+               ?callback formCB
+               ?fields         grid->fields
+               ?attachmentList grid->attachmentList
+               ?initialSize    FormSize(grid)
+               ?minSize        FormSize(grid)
+               ?buttonLayout  'OKCancelApply
+         )
+   hiDisplayForm(cgpathbrowseform)
+
+)
+
+procedure( CGpathBrowseFD(formMode)
+
+   retval = hiDisplayFileDialog(
+      ?dialogName 'myFileDialog
+      ?caption "Select Existing Directory"
+      ;?workingDir pwd()
+      ?mode evalstring(strcat("'" formMode))
+      ?modal t
+   )
+   retval=buildString(retval)
+   retval=simplifyFilename(retval)
+   retval=Strip(GSstr(retval)); Get rid of white space at the end
+   printf("%L\n" retval)
+   cgpathbrowseform->sf_pathname->value = retval
+)

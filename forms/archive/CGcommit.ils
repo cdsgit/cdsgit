@@ -1,0 +1,101 @@
+
+
+
+
+
+
+
+;PROBABLY WILL JUST REMOVE THIS
+;USE STATUS FORM FOR COMMITS
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+procedure( CGcommitForm(gs @key (commit_message "") )
+   importSkillVar(cdsGitAppName)
+
+   ;Strings
+   formHeader = sprintf(nil "%s Commit" cdsGitAppName)
+
+
+   ;Form Parameters
+   grid = Gridder(?verbose gs->verbose)
+   gridW = grid->width
+
+   commitCB = "CGstatusFormCommitCB()"
+
+   formLabel = sprintf(nil "Commit Message for path -- %s" gs->path)
+
+   fr_commit  = hiCreateFrameField( ?name 'fr_commit ?labelText formLabel)
+
+   s_commit   = hiCreateMLTextField(  ?name    's_commit
+            ?prompt     ""
+            ?value      ""
+            ?editable   t
+            ?hasVerticalScrollbar t
+            ?hasHorizontalScrollbar nil
+   )
+
+   b_commit = hiCreateButton(
+      ?name 'b_commit
+      ?buttonText "Commit"
+      ?callback commitCB
+   )
+
+   fr_autopush  = hiCreateFrameField( ?name 'fr_autopush ?labelText "Push After Commit")
+
+   c_autopush = hiCreateBooleanButton(
+      ?name 'c_autopush
+      ?buttonText " "
+      ?defValue nil
+   )
+
+   NewField(grid ?field fr_commit    ?x 1 ?y 1  ?w 5 ?h 7 ?prompt 10 ?expand '(10 0 10 10))
+   NewField(grid ?field s_commit     ?x 1 ?y 2  ?w 5 ?h 3 ?prompt 10 )
+   NewField(grid ?field fr_autopush  ?x 1 ?y 5  ?w 5 ?h 2 ?prompt 10 ?expand '(10 -10 10 0))
+   NewField(grid ?field c_autopush   ?x 1 ?y 6  ?w 5 ?h 1 ?prompt 10 )
+   NewField(grid ?field b_commit     ?x 1 ?y 7  ?w 5 ?h 1 ?prompt 10 )
+
+   cgcommit_form = hiCreateAppForm(
+               ?name 'cgcommit_form
+               ?formTitle formHeader
+               ?callback ""
+               ?fields         grid->fields
+               ?attachmentList grid->attachmentList
+               ?initialSize    FormSize(grid)
+               ?minSize        FormSize(grid)
+               ?buttonLayout  'OKCancelDef
+         )
+   cgcommit_form->gs = gs; Store the object
+
+   hiDisplayForm(cgcommit_form)
+
+)
+
+procedure( CGcommitFormCB(theForm)
+
+   gs = theForm->gs
+   commit_message = theForm->s_commit->value
+
+   Commit(gs commit_message)
+)

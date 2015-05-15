@@ -1,0 +1,117 @@
+/*
+   Create a branch
+
+  Testing
+  CGBSbranchopForm(GitShell(?path "../cdsgit-testrepo") "create")
+
+*/
+procedure( CGBSbranchopForm(gs branchop)
+
+   case( branchop
+      ("create"
+         titleOp = "Create"
+         formLabel = "Select Parent Branch"
+         formCB = "CGBSbranchopCB(\"create\")"
+         locationChoices = list("Local" "Remote")
+      )
+      ("delete"
+         titleOp = "Delete"
+         formLabel = "Select Branch to Delete"
+         formCB = "CGBSbranchopCB(\"delete\")"
+         locationChoices = list("Local")
+      )
+      ("rename"
+         titleOp = "Rename"
+         formLabel = "Select Branch to Rename"
+         formCB = "CGBSbranchopCB(\"rename\")"
+         locationChoices = list("Local")
+      )
+      ("checkout"
+         titleOp = "Checkout"
+         formLabel = "Select Branch to Checkout"
+         formCB = "CGBSbranchopCB(\"checkout\")"
+         locationChoices = list("Local")
+      )
+   )
+
+   importSkillVar(cdsGitAppName)
+
+   formTitle = sprintf(nil "%s %s Branch %s" cdsGitAppName titleOp gs->root->str)
+
+   grid = Gridder(?verbose gs->verbose)
+   gridW = grid->width
+
+   fr_bnameframe = hiCreateFrameField( ?name 'fr_bnameframe ?labelText "New Branch Name")
+
+   sf_bname = hiCreateStringField(
+      ?name 'sf_bname
+      ?prompt ""
+      ?value ""
+      ?defValue ""
+      ?editable t
+   )
+
+   if( branchop == "create" || branchop == "rename" then
+      NewField(grid ?field fr_bnameframe    ?x 1 ?y 7  ?w 5 ?h 1 ?prompt gridW*1 ?expand '(10 15 10 10))
+      NewField(grid ?field sf_bname         ?x 1 ?y 7  ?w 5 ?h 1 ?prompt gridW*1 )
+   )
+
+   CGbranchSelectForm(gs
+      ?formTitle ""
+      ?formLabel formLabel
+      ?formCB formCB
+      ?showCurrent t
+      ?grid grid
+      ?locationChoices locationChoices
+   )
+)
+
+
+procedure( CGBSbranchopCB(branchop)
+
+   ;Retreive form data
+
+   gs = cgbranchsel_form->gs
+
+   rf_branches_value = CGgetRFchoices(cgbranchsel_form->rf_branches)
+   parent_branch = nthelem(1 rf_branches_value)
+
+   if( !rf_branches_value then
+      Error(gs "You must select a Branch")
+   )
+
+   if( branchop == "create" || branchop == "rename" then
+      sf_bname_value = cgbranchsel_form->sf_bname->value
+
+      ;Check the the branch name exists
+      if( sf_bname_value == "" then
+         Error(gs "You must enter a branch name")
+      )
+
+      CheckFormat(gs sf_bname_value)
+
+   )
+
+   case( branchop
+      ("create"
+         ;Branch(gs ?args sf_bname_value)
+         ;Checkout can create and checkout
+         Checkout(gs "" ?args strcat("-b " sf_bname_value " " parent_branch ) )
+         Info(gs strcat("Branch " sf_bname_value " created and checked out") )
+         CGbranchSelectFormRefersh()
+      )
+      ("delete"
+         Branch(gs ?args strcat("--delete " parent_branch) )
+         CGbranchSelectFormRefersh()
+      )
+      ("rename"
+         Branch(gs ?args strcat("-m " parent_branch " " sf_bname_value) )
+         CGbranchSelectFormRefersh()
+      )
+      ("checkout"
+         Checkout(gs "" ?args parent_branch)
+         hiFormCancel(cgbranchsel_form)
+      )
+   )
+
+)

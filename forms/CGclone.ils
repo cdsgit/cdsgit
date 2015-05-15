@@ -1,0 +1,58 @@
+procedure(CGcloneForm()
+
+   importSkillVar(cdsGitAppName)
+   formHeader = sprintf(nil "%s Clone Repository" cdsGitAppName)
+
+   ;Form Parameters
+   grid = Gridder()
+   gridW = grid->width
+
+   fr_url  = hiCreateFrameField( ?name 'fr_url ?labelText "Repository URL")
+
+   s_url = hiCreateStringField( ?name 's_url ?value "" )
+
+   fr_dirname  = hiCreateFrameField( ?name 'fr_dirname ?labelText "Destination")
+
+   s_dirname = hiCreateStringField( ?name 's_dirname ?value pwd() )
+
+   b_browse = hiCreateFormButton(
+      ?name 'b_browse
+      ?buttonText "Browse..."
+      ?callback "ddsFileBrowseCB( hiGetCurrentForm() 's_dirname \"*\" 'directoryOnly)"
+   )
+
+   NewField(grid ?field fr_url      ?x 1 ?y 1 ?w 5 ?h 2 ?prompt 10 ?expand '(10 20 10 0))
+   NewField(grid ?field s_url       ?x 1 ?y 1 ?w 5 ?h 1 ?prompt 10)
+   NewField(grid ?field fr_dirname  ?x 1 ?y 3 ?w 5 ?h 2 ?prompt 10 ?expand '(10 20 10 0))
+   NewField(grid ?field s_dirname   ?x 1 ?y 3 ?w 5 ?h 1 ?prompt 10)
+   NewField(grid ?field b_browse    ?x 1 ?y 5 ?w 5 ?h 1 ?prompt 10)
+
+
+   cgclone_form = hiCreateAppForm(
+               ?name 'cgclone_form
+               ?formTitle formHeader
+               ?callback "CGcloneFormCB()"
+               ?fields         grid->fields
+               ?attachmentList grid->attachmentList
+               ?initialSize    FormSize(grid)
+               ?minSize        FormSize(grid)
+               ?buttonLayout  'OKCancelApply
+         )
+
+   hiDisplayForm(cgclone_form)
+
+)
+
+
+procedure( CGcloneFormCB()
+
+   giturl = cgclone_form->s_url->value
+   gitdst = cgclone_form->s_dirname->value
+
+   gs = GitShell(?path gitdst ?url giturl ?skipCheck t)
+
+   if( gs->verbose printf("URL: %s DESTINIATION: %s" giturl gitdst) )
+
+   CloneRepo(gs)
+
+)

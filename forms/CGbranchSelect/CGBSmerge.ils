@@ -1,0 +1,42 @@
+/*
+   Merge a branch
+*/
+procedure( CGBSmergeForm(gs)
+
+   importSkillVar(cdsGitAppName)
+
+   formTitle = sprintf(nil "%s Merge Branch %s" cdsGitAppName gs->root->str)
+   formCB = "CGBSmergeFormCB()"
+
+   CGbranchSelectForm(gs
+      ?formTitle formTitle
+      ?formLabel "Select a Branch to Merge"
+      ?formCB formCB
+      ?showCurrent nil
+      ?branch_args "--no-merged"
+   )
+
+)
+
+procedure( CGBSmergeFormCB()
+   gs = cgbranchsel_form->gs
+
+
+   rf_branches_value = CGgetRFchoices(cgbranchsel_form->rf_branches)
+
+   if(rf_branches_value then
+      src_branch = nthelem(1 rf_branches_value)
+      if( gs->verbose printf("CGBSmergeFormCB: Attempting to merge %L",src_branch))
+      result = Merge(gs src_branch)
+      if( result == "warning" then
+         response = Dialog(gs "Merge failed due to conflicts\nOpen the Merge confilt resolve form?")
+         if(response then
+            gs->path = gs->root->str
+            CGmergeResolveForm(gs)
+         else
+            Error(gs "Merge failed due to unresolved conflicts")
+         )
+      )
+   )
+
+)

@@ -1,0 +1,230 @@
+/* Testing
+CGmergeResolveForm(GitShell(?path "../cdsgit-testrepo"))
+TODO: Allow ours and theirs to interchange
+*/
+
+;Merge Gui
+procedure( CGmergeResolveForm(gs)
+
+   importSkillVar(cdsGitAppName)
+
+   ;Strings
+   formHeader = sprintf(nil "%s Merge Resolve" cdsGitAppName)
+   formHeader = sprintf(nil "%s Merge Resolve of Path: %s" cdsGitAppName gs->path)
+
+
+   ;Get the status from GIT
+   Status(gs)
+
+   ;Form Parameters
+   grid = Gridder(?verbose gs->verbose)
+   gridW = grid->width
+   radioCB  = "CGmergeResolveFormRadioCB()"
+   rescanCB = "CGmergeResolveFormUpdate()"
+
+   reportHeader = list(
+      list( "Index Status" 1*gridW 'left 'string t )
+      list( "Tree  Status" 1*gridW 'left 'string t )
+      list( "Path"         3*gridW 'left 'string t )
+      list( "Conflict"     1*gridW 'left 'string t )
+      )
+
+   if( t then
+
+      fr_gspath = hiCreateFrameField( ?name 'fr_gspath ?labelText formHeader )
+
+      r_filter=hiCreateRadioField(
+         ?name 'r_filter
+         ?prompt "Depth"
+         ?value gs->depth
+         ?choices '("Repository" "Library" "Cell" "View" "Files")
+         ?callback list(radioCB)
+      )
+
+      fr_conflict = hiCreateFrameField( ?name 'fr_conflict ?labelText "Conflicted")
+
+      rf_conflict = hiCreateReportField(
+               ?name 'rf_conflict
+               ?headers reportHeader
+               ?choices gs->conflicted
+               ?selectMode 'single
+               ?callback ""
+               ?doubleClickCB ""
+            )
+
+      fr_ours = hiCreateFrameField( ?name 'fr_ours ?labelText "Ours")
+
+      rf_ours = hiCreateReportField(
+               ?name 'rf_ours
+               ?headers reportHeader
+               ?choices list()
+               ?selectMode 'single
+               ?callback 'CGstatusFormReportCB
+               ?doubleClickCB ""
+            )
+
+      fr_ours = hiCreateFrameField( ?name 'fr_ours ?labelText "Ours")
+
+      rf_ours = hiCreateReportField(
+               ?name 'rf_ours
+               ?headers reportHeader
+               ?choices list()
+               ?selectMode 'single
+               ?callback ""
+               ?doubleClickCB ""
+            )
+
+
+      fr_theirs = hiCreateFrameField( ?name 'fr_theirs ?labelText "Theirs")
+
+      rf_theirs = hiCreateReportField(
+               ?name 'rf_theirs
+               ?headers reportHeader
+               ?choices list()
+               ?selectMode 'extended
+               ?callback ""
+               ?doubleClickCB ""
+            )
+
+
+      b_rescan = hiCreateButton(
+         ?name 'b_rescan
+         ?buttonText "Rescan"
+         ?callback rescanCB
+      )
+
+      b_add_ours = hiCreateButton(
+         ?name 'b_add_ours
+         ?buttonText "<---Ours"
+         ?callback "CGmergeResolveFormAddCB(\"ours\")"
+      )
+
+      b_add_theirs = hiCreateButton(
+         ?name 'b_add_theirs
+         ?buttonText "Theirs--->"
+         ?callback "CGmergeResolveFormAddCB(\"theirs\")"
+      )
+
+      ;TODO - What does manual merge do??
+      b_manual_merge = hiCreateButton(
+         ?name 'b_manual_merge
+         ?buttonText "Manual Merge"
+         ?callback ""
+      )
+
+      b_commit = hiCreateButton(
+         ?name 'b_commit
+         ?buttonText "Commit"
+         ?callback "CGmergeResolveFormCommitCB()"
+      )
+
+
+      frameW = 3
+      totalW = 3*frameW
+
+      NewField(grid ?field fr_gspath     ?x 1 ?y 1  ?w totalW ?h 10 ?prompt 10 ?expand '(10 0 10 10))
+      NewField(grid ?field r_filter      ?x 1 ?y 2  ?w totalW ?h 1  ?prompt 100)
+
+      NewField(grid ?field fr_ours   ?x 1 ?y 3  ?w frameW ?h 5 ?prompt 10 ?expand '(10 0 5 0))
+      NewField(grid ?field rf_ours   ?x 1 ?y 4  ?w frameW ?h 4 ?prompt 10)
+
+      NewField(grid ?field fr_conflict   ?x 1+frameW ?y 3  ?w frameW ?h 5 ?prompt 10 ?expand '(10 0 5 0))
+      NewField(grid ?field rf_conflict   ?x 1+frameW ?y 4  ?w frameW ?h 4 ?prompt 10)
+
+      NewField(grid ?field fr_theirs   ?x 1+frameW*2 ?y 3  ?w frameW ?h 5 ?prompt 10 ?expand '(10 0 5 0))
+      NewField(grid ?field rf_theirs   ?x 1+frameW*2 ?y 4  ?w frameW ?h 4 ?prompt 10)
+
+      NewField(grid ?field b_add_ours     ?x 1          ?y 8  ?w frameW ?h 1 ?prompt 10)
+      NewField(grid ?field b_rescan       ?x 1+frameW   ?y 8  ?w frameW ?h 1 ?prompt 10)
+      NewField(grid ?field b_add_theirs   ?x 1+frameW*2 ?y 8  ?w frameW ?h 1 ?prompt 10)
+
+      NewField(grid ?field b_manual_merge ?x 1+frameW   ?y 9  ?w frameW ?h 1 ?prompt 10)
+      NewField(grid ?field b_commit       ?x 1+frameW   ?y 10 ?w frameW ?h 1 ?prompt 10)
+
+
+      cgmergeresolve_form = hiCreateAppForm(
+                  ?name 'cgmergeresolve_form
+                  ?formTitle formHeader
+                  ?callback ""
+                  ?fields         grid->fields
+                  ?attachmentList grid->attachmentList
+                  ?initialSize    FormSize(grid)
+                  ?minSize        FormSize(grid)
+                  ?buttonLayout  'OKCancelDef
+                  ?dontBlock      t
+            )
+      cgmergeresolve_form->gs = gs; Store the object
+
+      hiDisplayForm(cgmergeresolve_form)
+   )
+)
+
+
+;Change the filter depth
+procedure( CGmergeResolveFormRadioCB()
+   gs = cgmergeresolve_form->gs
+   if(gs->verbose printf("CGmergeResolveFormRadioCB\n") )
+   gs->depth = cgmergeresolve_form->r_filter->value
+   SetFilter(gs)
+   CGmergeResolveFormUpdate()
+)
+
+procedure( CGmergeResolveFormAddCB(option)
+   gs = cgmergeresolve_form->gs
+
+   fvalue   = car(cgmergeresolve_form->rf_conflict->value)
+   if( fvalue then
+      fchoices = cgmergeresolve_form->rf_conflict->choices
+      fchoice = nthelem(fvalue+1 fchoices)
+      oppath = nthelem(3 fchoice)
+
+      Checkout(gs strcat("--" option) ?oppath oppath)
+      Add(gs oppath)
+
+      case( option
+         ("ours"   cgmergeresolve_form->rf_ours   = CGappendRFchoices(cgmergeresolve_form->rf_ours   fchoice) )
+         ("theirs" cgmergeresolve_form->rf_theirs = CGappendRFchoices(cgmergeresolve_form->rf_theirs fchoice) )
+
+      )
+   )
+
+   ;Update the form, do not clear ours and theirs
+   CGmergeResolveFormUpdate()
+
+)
+
+procedure( CGmergeResolveFormCommitCB()
+   gs = cgmergeresolve_form->gs
+
+   fchoices = cgmergeresolve_form->rf_conflict->choices
+
+   if( fchoices then
+      Info(gs "Please Resolve All Conflicts Before Commit!")
+   else
+      Commit(gs "" ?merge t)
+   )
+   hiFormClose(cgmergeresolve_form)
+   hiFormClose(cgbranchsel_form)
+
+   Info(gs "Merge Complete!")
+   Refresh(gs)
+
+)
+
+procedure( CGmergeResolveFormUpdate( @key ( clear_ours nil ) ( clear_theirs nil) )
+
+   gs = cgmergeresolve_form->gs
+
+   ;Update the status
+   Status(gs ?showInfo nil)
+
+   ;Update the fields
+   cgmergeresolve_form->rf_theirs->value = nil
+   cgmergeresolve_form->rf_ours->value   = nil
+   if(clear_theirs cgmergeresolve_form->rf_theirs->choices = list() )
+   if(clear_ours   cgmergeresolve_form->rf_ours->choices =   list() )
+   cgmergeresolve_form->rf_conflict->choices = gs->conflicted
+
+
+
+)

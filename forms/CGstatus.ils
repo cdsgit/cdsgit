@@ -1,0 +1,253 @@
+
+procedure( CGstatusForm(gs)
+
+   importSkillVar(cdsGitAppName)
+
+   ;Strings
+   formHeader = sprintf(nil "%s Status" cdsGitAppName)
+   formHeader = sprintf(nil "%s Status of Path: %s" cdsGitAppName gs->path)
+
+
+   ;Get the status from GIT
+   Status(gs)
+
+   ;Form Parameters
+   grid = Gridder(?verbose gs->verbose)
+   gridW = grid->width
+   toggleCB = "CGstatusFormToggleCB()"
+   radioCB  = "CGstatusFormRadioCB()"
+   diffCB   = "CGstatusFormDiffCB()"
+   commitCB = "CGstatusFormCommitCB()"
+   pushCB   = "CGstatusFormPushCB()"
+   rescanCB = "CGstatusFormUpdate()"
+
+   reportHeader = list(
+      list( "Index Status" 1*gridW 'left 'string t )
+      list( "Tree  Status" 1*gridW 'left 'string t )
+      list( "Path"         3*gridW 'left 'string t )
+      list( "Conflict"     1*gridW 'left 'string t )
+      )
+
+   if( t then
+
+      fr_gspath = hiCreateFrameField( ?name 'fr_gspath ?labelText formHeader )
+
+      r_filter=hiCreateRadioField(
+         ?name 'r_filter
+         ?prompt "Depth"
+         ?value gs->depth
+         ?choices '("Repository" "Library" "Cell" "View" "Files")
+         ?callback list(radioCB)
+      )
+
+      fr_staged = hiCreateFrameField( ?name 'fr_staged ?labelText "Staged for Commit (Will Commit)")
+
+      rf_staged = hiCreateReportField(
+               ?name 'rf_staged
+               ?headers reportHeader
+               ?choices gs->staged
+               ?selectMode 'extended
+               ?callback 'CGstatusFormReportCB
+               ?doubleClickCB toggleCB
+            )
+
+      fr_unstaged = hiCreateFrameField( ?name 'fr_unstaged ?labelText "Unstaged Changes")
+
+      rf_unstaged = hiCreateReportField(
+               ?name 'rf_unstaged
+               ?headers reportHeader
+               ?choices gs->unstaged
+               ?selectMode 'extended
+               ?callback 'CGstatusFormReportCB
+               ?doubleClickCB toggleCB
+            )
+
+      fr_commit  = hiCreateFrameField( ?name 'fr_commit ?labelText "Commit Message")
+
+
+      s_commit   = hiCreateMLTextField(  ?name    's_commit
+               ?prompt     ""
+               ?value      CommitMsg(gs)
+               ?editable   t
+               ?hasVerticalScrollbar t
+               ?hasHorizontalScrollbar nil
+      )
+
+      b_rescan = hiCreateButton(
+         ?name 'b_rescan
+         ?buttonText "Rescan"
+         ?callback rescanCB
+      )
+
+      b_toggle = hiCreateButton(
+         ?name 'b_toggle
+         ?buttonText "Toggle"
+         ?callback toggleCB
+      )
+
+      b_diff = hiCreateButton(
+         ?name 'b_diff
+         ?buttonText "Diff"
+         ?callback diffCB
+      )
+
+      b_commit = hiCreateButton(
+         ?name 'b_commit
+         ?buttonText "Commit"
+         ?callback commitCB
+      )
+
+      b_push = hiCreateButton(
+         ?name 'b_push
+         ?buttonText "Push"
+         ?callback pushCB
+      )
+
+      totalW = 6
+
+      NewField(grid ?field fr_gspath     ?x 1 ?y 1  ?w totalW ?h 20 ?prompt 10 ?expand '(10 0 10 10))
+      NewField(grid ?field r_filter      ?x 1 ?y 2  ?w totalW ?h 1 ?prompt 100)
+      NewField(grid ?field fr_unstaged   ?x 1 ?y 3  ?w totalW ?h 5 ?prompt 10 ?expand '(10 0))
+      NewField(grid ?field rf_unstaged   ?x 1 ?y 4  ?w totalW ?h 4 ?prompt 10)
+      NewField(grid ?field fr_staged     ?x 1 ?y 8  ?w totalW ?h 5 ?prompt 10 ?expand '(10 0))
+      NewField(grid ?field rf_staged     ?x 1 ?y 9  ?w totalW ?h 4 ?prompt 10)
+      NewField(grid ?field fr_commit     ?x 1 ?y 13 ?w totalW ?h 4 ?prompt 10 ?expand '(10 0))
+      NewField(grid ?field s_commit      ?x 1 ?y 14 ?w totalW ?h 3 ?prompt 10)
+      NewField(grid ?field b_rescan      ?x 1 ?y 17 ?w totalW ?h 1 ?prompt 10)
+      NewField(grid ?field b_toggle      ?x 1 ?y 18 ?w totalW ?h 1 ?prompt 10)
+      NewField(grid ?field b_diff        ?x 1 ?y 19 ?w totalW ?h 1 ?prompt 10)
+      NewField(grid ?field b_commit      ?x 1 ?y 20 ?w totalW ?h 1 ?prompt 10)
+      NewField(grid ?field b_push        ?x 1 ?y 21 ?w totalW ?h 1 ?prompt 10)
+
+      cgstatus_form = hiCreateAppForm(
+                  ?name 'cgstatus_form
+                  ?formTitle formHeader
+                  ?callback ""
+                  ?fields         grid->fields
+                  ?attachmentList grid->attachmentList
+                  ?initialSize    FormSize(grid)
+                  ?minSize        FormSize(grid)
+                  ?buttonLayout  'OKCancelDef
+                  ?dontBlock      t
+            )
+      cgstatus_form->gs = gs; Store the object
+
+      hiDisplayForm(cgstatus_form)
+   )
+)
+
+;Toggle an item between stage and unstaged
+procedure( CGstatusFormToggleCB()
+   gs = cgstatus_form->gs
+   staged = cgstatus_form->rf_staged->value
+   unstaged = cgstatus_form->rf_unstaged->value
+
+   ;Only run if something is selected
+   if( staged || unstaged then
+
+      if(staged && unstaged then
+         error("Cannot select both a staged and unstaged item")
+      )
+      if(staged then
+         if(gs->verbose printf("Toggle staged\n"))
+         fvalues  = cgstatus_form->rf_staged->value
+         fchoices = cgstatus_form->rf_staged->choices
+         operation = "reset"
+      )
+      if(unstaged then
+         if(gs->verbose printf("Toggle unstaged\n"))
+         fvalues  = cgstatus_form->rf_unstaged->value
+         fchoices = cgstatus_form->rf_unstaged->choices
+         operation = "add"
+      )
+      if( !unstaged && !staged
+         warn("Nothing selected!")
+      )
+
+      foreach(fvalue fvalues
+         fchoice = nthelem(fvalue+1 fchoices)
+         oppath = nthelem(3 fchoice)
+
+         case(operation
+            ("add"     Add(gs oppath ) )
+            ("reset" Reset(gs oppath ) )
+            (t error("invalied Toggle operation"))
+         )
+      )
+      CGstatusFormUpdate()
+   )
+)
+
+;Change the filter depth
+procedure( CGstatusFormRadioCB()
+   gs = cgstatus_form->gs
+   if(gs->verbose printf("CGstatusFormRadioCB\n") )
+   gs->depth = cgstatus_form->r_filter->value
+   SetFilter(gs)
+   CGstatusFormUpdate()
+)
+
+;Select an item in the report
+procedure( CGstatusFormReportCB(fieldName selectedItems "sl")
+   gs = cgstatus_form->gs
+   if(gs->verbose printf( "Report field callback, fieldName = %L, selectedItems = %L\n" fieldName selectedItems ))
+   ;Only deselect if something is selected (prevents loopback)
+   if(selectedItems then
+      case(fieldName
+         ('rf_staged
+            if(gs->verbose printf("Clean unstaged %L\n" cgstatus_form->rf_unstaged->value))
+            cgstatus_form->rf_unstaged->value = nil
+            cgstatus_form->b_toggle->_buttonText = "Unstage Selected"
+         )
+         ('rf_unstaged
+            if(gs->verbose printf("Clean rf_staged %L\n" cgstatus_form->rf_staged->value))
+            cgstatus_form->rf_staged->value = nil
+            cgstatus_form->b_toggle->_buttonText = "Stage Selected"
+         )
+      )
+   )
+)
+
+;Make a Commit
+procedure( CGstatusFormCommitCB()
+
+   CGcommitFormCB(cgstatus_form)
+   CGstatusFormUpdate()
+   cgstatus_form->s_commit->value=""
+
+)
+
+procedure( CGcommitFormCB(theForm)
+
+   gs = theForm->gs
+   commit_message = theForm->s_commit->value
+
+   Commit(gs commit_message)
+)
+
+procedure( CGstatusFormPushCB()
+
+   gs = cgstatus_form->gs
+
+   Push(gs)
+)
+
+
+procedure( CGstatusFormUpdate()
+
+   gs = cgstatus_form->gs
+
+   ;Update the status
+   Status(gs ?showInfo nil)
+
+   ;Update the label with path didn't seem to work
+   ;cgstatus_form->fr_gspath->_labelOnly = gs->path
+
+   ;Update the fields
+   cgstatus_form->rf_staged->value   = nil
+   cgstatus_form->rf_unstaged->value = nil
+   cgstatus_form->rf_staged->choices   = gs->staged
+   cgstatus_form->rf_unstaged->choices = gs->unstaged
+
+
+)

@@ -1,0 +1,251 @@
+;###############################################################################
+/*
+
+A LCBUsetOptions form template for executing a SKILL function
+Setup pass db's to a SKILL function
+Basic options to run on Cell,Selected,Library, or Hierarchy
+
+2012
+Allegro Microsystems
+Aaron Cook
+
+3-space tab's
+
+Requires:
+LCBUsetOptionsFormLib.il
+
+load(strcat(lcbu_path "/scripts/env/LCBUsetOptions.il"))
+
+debugging bindkey
+hiSetBindKey("Command Interpreter" "<Key>F11" "strcat(lcbu_path \"/scripts/LCBUsetOptions.il\")")
+*/
+;###############################################################################
+
+
+
+;###############################################################################
+;# Main Form                                                                   #
+;###############################################################################
+
+
+;A list of options '(prompt envName)
+LCBUoptionsSet = list(
+
+   '("Git Skill" "LCBU_GIT_SKILL")
+   '("Argentina Skill" "LCBU_ARG_SKILL")
+   '("IP tracker" "LCBU_IPTRACKER")
+   '("AMS netlist Fix" "LCBU_AMSFIX")
+
+)
+
+
+
+procedure(LCBUsetOptions_form()
+prog((labelField libPathField skillPathField LCBUsetOptionsForm )
+
+   ;;Form Title
+   formTitle = "Set LCBU Options"
+
+   ;;Define form fields
+   labelField = hiCreateLabel(   ?name    'formLabel
+            ?labelText       formTitle
+   ); labelField
+
+   tOptions = list()
+   fFields = list()
+
+   yoffset = 30
+   yloc = 10
+
+   foreach( lcbuEnv LCBUoptionsSet
+
+      envName   =  car(cdr(lcbuEnv) )
+      envPrompt =  car(lcbuEnv)
+
+      toggleField = hiCreateToggleField(
+         ?name evalstring(strcat("'t" envName))
+         ?prompt ""
+         ?choices list(
+            list( 'cChoice envPrompt )
+         )
+         ?value list( LCBUenvGetVar( envName ) )
+         ?numSelect 1
+      );toggleField
+
+      newField = list( toggleField 10:yloc 475:35 200)
+      fFields = cons(newField fFields)
+
+      yloc = yloc + yoffset
+
+   );foreach
+
+   reset_button=hiCreateButton(
+            ?name 'reset_button
+            ?buttonText "Restore LCBU defaults"
+            ?callback "LCBUsetOptions_defaults_formCB()"
+   )
+
+   newField = list( reset_button 10:yloc 475:35 )
+
+   fFields=append(fFields list(newField))
+
+   ;;Main Form
+   f_LCBUsetOptions = hiCreateAppForm( ?name    'f_LCBUsetOptions
+            ?formTitle  formTitle
+            ?fields fFields
+            ?buttonLayout  'OKCancelDefApply
+            ?initialSize   t
+            ?callback   '("LCBUsetOptions_formCB()")
+   ); f_LCBUsetOptions
+
+   hiDisplayForm(f_LCBUsetOptions)
+
+); prog
+); procedure
+
+;###############################################################################
+;# Run the form on selected options                                            #
+;###############################################################################
+
+procedure(LCBUsetOptions_formCB()
+
+   foreach( lcbuEnv LCBUoptionsSet
+      envName  =  car(cdr(lcbuEnv))
+      envValue = evalstring( strcat("hiGetCurrentForm()->t" envName "->cChoice->value") )
+      LCBUenvSetVar(envName LCBUenvBool(envValue  ?toS t))
+   )
+
+   LCBUenvRefresh()
+
+);procedure
+
+;###############################################################################
+;# Restore the defaults                                         #
+;###############################################################################
+
+procedure(LCBUsetOptions_defaults_formCB()
+
+   foreach( lcbuEnv LCBUoptionsSet
+      envName  =  car(cdr(lcbuEnv))
+      evalstring( strcat("hiGetCurrentForm()->t" envName "->cChoice->value=LCBUenvGetVar(envName ?forcedPath lcbu_settings_path_template) ") )
+   )
+)
+
+
+
+
+;###############################################################################
+/*
+
+A LCBUsetPaths form template for executing a SKILL function
+Setup pass db's to a SKILL function
+Basic options to run on Cell,Selected,Library, or Hierarchy
+
+2012
+Allegro Microsystems
+Aaron Cook
+
+3-space tab's
+
+Requires:
+LCBUsetPathsFormLib.il
+
+load(strcat(lcbu_path "/scripts/common/LCBUsetPaths.il"))
+
+debugging bindkey
+hiSetBindKey("Command Interpreter" "<Key>F11" "strcat(lcbu_path \"/scripts/LCBUsetPaths.il\")")
+*/
+;###############################################################################
+
+
+
+;###############################################################################
+;# Main Form                                                                   #
+;###############################################################################
+procedure(LCBUsetPaths_form()
+prog((labelField libPathField skillPathField LCBUsetPathsForm )
+
+   ;;Form Title
+   formTitle = "Set LCBU Paths"
+
+   userName = getShellEnvVar("USER")
+
+   envLibPath   = LCBUenvGetVar("LCBU_LIB_PATH")
+   envSkillPath = LCBUenvGetVar("LCBU_SKILL")
+
+   userLibPath = strcat("/home/" userName "/git/cds6libs")
+   if(!isDir(userLibPath) userLibPath = "")
+
+   userSkillPath = strcat("/home/" userName "/git/lcbu-skill")
+   if(!isDir(userSkillPath) userSkillPath = "")
+
+   defaultSkillPath = LCBUenvGetVar("LCBU_SKILL"    ?forcedPath lcbu_settings_path_template)
+   defaultLibPath   = LCBUenvGetVar("LCBU_LIB_PATH" ?forcedPath lcbu_settings_path_template)
+
+
+   ;;Define form fields
+   labelField = hiCreateLabel(   ?name    'formLabel
+            ?labelText       formTitle
+   ); labelField
+   libPathField   = hiCreateComboField(  ?name    'libPathField
+            ?prompt     "LCBU library path"
+            ?value      envLibPath
+            ?items    list(envLibPath defaultLibPath userLibPath)
+            ?editable   t
+   ); libPathField
+   skillPathField   = hiCreateComboField(  ?name    'skillPathField
+            ?prompt     "LCBU SKILL path"
+            ?value      envSkillPath
+            ?items    list(envSkillPath defaultSkillPath userSkillPath)
+            ?editable   t
+   ); skillPathField
+   reset_button=hiCreateButton(
+            ?name 'reset_button
+            ?buttonText "Restore LCBU defaults"
+            ?callback "LCBUsetPaths_defaults_formCB()"
+   )
+
+   ;;Main Form
+   f_LCBUsetPaths = hiCreateAppForm( ?name    'f_LCBUsetPaths
+            ?formTitle  formTitle
+            ?fields     list(
+               list( labelField       10:10   475:35 200 )
+               list( libPathField     10:40   475:35 200 )
+               list( skillPathField   10:70   475:35 200 )
+               list( reset_button     10:100  475:50     )
+            )
+            ?buttonLayout  'OKCancelDefApply
+            ?initialSize   t
+            ?callback   '("LCBUsetPaths_formCB()")
+   ); f_LCBUsetPaths
+
+   hiDisplayForm(f_LCBUsetPaths)
+
+); prog
+); procedure
+
+;###############################################################################
+;# Run the form on selected options                                            #
+;###############################################################################
+
+procedure(LCBUsetPaths_formCB()
+
+   lcbuSkillPath = skillPathField -> value
+   lcbuLibPath   = libPathField -> value
+
+   LCBUenvSetVar("LCBU_SKILL"    lcbuSkillPath)
+   LCBUenvSetVar("LCBU_LIB_PATH" lcbuLibPath)
+
+   LCBUenvRefresh()
+
+);procedure
+
+;###############################################################################
+;# Restore the defaults                                         #
+;###############################################################################
+
+procedure(LCBUsetPaths_defaults_formCB()
+   hiGetCurrentForm() -> skillPathField -> value = LCBUenvGetVar("LCBU_SKILL"    ?forcedPath lcbu_settings_path_template)
+   hiGetCurrentForm() -> libPathField   -> value = LCBUenvGetVar("LCBU_LIB_PATH" ?forcedPath lcbu_settings_path_template)
+)
+

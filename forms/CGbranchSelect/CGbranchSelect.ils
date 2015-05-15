@@ -1,0 +1,92 @@
+/* Testing
+CGbranchSelectForm(GitShell(?path "../cdsgit-testrepo"))
+
+TODO ADD TAGS
+TODO Add SHA and log to branch status
+*/
+
+procedure( CGbranchSelectForm(gs @key (formTitle "") (formLabel "Select a Branch") (formCB "") (showCurrent t) (branch_args "") (grid nil) (locationChoices list("Local" "Remote")) )
+
+   ;Form Parameters
+   if( !grid then
+      grid = Gridder(?verbose gs->verbose)
+   )
+   gridW = grid->width
+
+   ;l_formlabel = hiCreateLabel( ?name 'l_formlabel ?labelText formLabel )
+   fr_formframe = hiCreateFrameField( ?name 'fr_formframe ?labelText formLabel)
+
+   c_location = hiCreateRadioField(
+      ?name 'c_location
+      ?prompt ""
+      ?choices locationChoices
+      ?value "Local"
+      ?callback list("CGbranchSelectFormRefersh()")
+   )
+
+   reportHeader = list(
+      list( "Name" gridW   'left 'string t )
+      ;list( "SHA"  gridW   'left 'string t )
+      ;list( "Log"  gridW*3 'left 'string t )
+   )
+
+   rf_branches = hiCreateReportField(
+            ?name 'rf_branches
+               ?title formTitle
+               ?titleAlignment 'center
+               ?headers reportHeader
+               ?choices list()
+               ?selectMode 'single
+               ?callback ""
+               ?doubleClickCB  formCB
+
+            )
+
+   NewField(grid ?field fr_formframe    ?x 1 ?y 1  ?w 5 ?h 5 ?prompt gridW*1 ?expand '(10 15 10 10))
+   NewField(grid ?field c_location      ?x 1 ?y 1  ?w 5 ?h 1 ?prompt gridW*1 )
+   NewField(grid ?field rf_branches     ?x 1 ?y 2  ?w 5 ?h 4 ?prompt 10 )
+
+   cgbranchsel_form = hiCreateAppForm(
+               ?name 'cgbranchsel_form
+               ?formTitle formTitle
+               ?callback formCB
+               ?fields         grid->fields
+               ?attachmentList grid->attachmentList
+               ?initialSize    FormSize(grid)
+               ?minSize        FormSize(grid)
+               ?buttonLayout  'OKCancelApply
+               ?dontBlock      t
+         )
+
+   cgbranchsel_form->gs = gs
+   cgbranchsel_form->showCurrent = showCurrent
+   cgbranchsel_form->branch_args = branch_args
+
+   hiDisplayForm(cgbranchsel_form)
+
+   CGbranchSelectFormRefersh()
+
+)
+
+;TODO, make the current branch be selected
+procedure( CGbranchSelectFormRefersh()
+   gs = cgbranchsel_form->gs
+   showCurrent = cgbranchsel_form->showCurrent
+   branch_args = cgbranchsel_form->branch_args
+
+   args = ""
+   case( cgbranchsel_form->c_location->value
+      ("Local"   args = branch_args   )
+      ("Remote"  args = strcat("-r " branch_args) )
+   )
+
+   Branch(gs ?args args ?showCurrent showCurrent)
+
+   ;Convert to a list for the report field
+   branch_list = list()
+   foreach(branch gs->branches
+      branch_list = append(branch_list list(list(branch)) )
+   )
+   cgbranchsel_form->rf_branches->choices = branch_list
+
+)
