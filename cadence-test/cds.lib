@@ -1,0 +1,7 @@
+-- /home/acook/git/cdsgit/cadence-test/cds.lib created on Wed Feb 12 21:13:29 EST 2014 by runcds6.
+INCLUDE ${CAD_LIB_PATH}cds.lib
+DEFINE LIB_LVL1 ../cdsgit-testrepo//LIB_LVL1
+DEFINE LIB_LVL2 ../cdsgit-testrepo/level2/LIB_LVL2
+DEFINE GMtest ./GMtest
+DEFINE EXAMPLE_LIBRARY /home/acook/git/cdsgit-example/EXAMPLE_LIBRARY
+DEFINE EXAMPLE_LIBRARY_NEW /home/acook/git/cdsgit-example-new/EXAMPLE_LIBRARY
