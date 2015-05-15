@@ -1,0 +1,13 @@
+/*
+   Pull from remote
+*/
+procedure( CGremoteCB(gs remote_op)
+
+   case(remote_op
+      ("pull"  Pull(gs)  )
+      ("push"  Push(gs)  )
+      ("fetch" Fetch(gs) )
+   )
+
+
+)

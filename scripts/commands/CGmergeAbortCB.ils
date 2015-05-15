@@ -1,0 +1,9 @@
+procedure( CGmergeAbortCB(gs)
+
+   response = Dialog(gs "Aborting Merge will cause all uncommitted changes to be lost!!\nProceed?")
+
+   if( response then
+      Merge(gs "--abort")
+   )
+
+)

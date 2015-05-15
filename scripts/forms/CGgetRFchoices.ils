@@ -1,0 +1,27 @@
+/*
+   Get the choices from a report field
+      If 1 value, returns that choices;
+      If >1 values, returns a  list of choices
+      If none selected returns nil
+*/
+procedure( CGgetRFchoices(report_field)
+
+   rf_choices = nil
+
+   rf_branches_value = report_field->value
+
+   if( rf_branches_value then
+      if( length(rf_branches_value) == 1 then
+         rf_value = car(rf_branches_value)
+         rf_choices = nthelem(rf_value+1 report_field->choices)
+      else
+         rf_choices = list()
+         foreach( rf_value rf_branches_value
+            rf_choices = append( rf_choices list(nthelem(rf_value+1 report_field->choices)) )
+         )
+      )
+   )
+
+   rf_choices
+
+)

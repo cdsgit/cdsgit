@@ -1,0 +1,13 @@
+/*
+   Get the choices from a report field
+      If 1 value, returns that choices;
+      If >1 values, returns a  list of choices
+      If none selected returns nil
+*/
+procedure( CGappendRFchoices(report_field append_choice)
+
+   report_field->choices = append(report_field->choices list(append_choice))
+
+   report_field
+
+)
