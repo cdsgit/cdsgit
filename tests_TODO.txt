@@ -1,0 +1,30 @@
+### TESTS
+
+# Create a file
+
+# Modfiy a file
+
+# Delete a file
+
+# Deleta a file after it has been added to index (created or modified)
+
+
+
+
+## Branching
+   Create a branch
+   Rename the Branch
+   Destroy the branch
+   Checkout branch
+   
+   
+## Merging
+   Create a conflict in a schematic
+   Merge the branch
+   Resolve the conflict
+   Commit the result
+   
+   Repeat with a merge discard
+   
+   
+
