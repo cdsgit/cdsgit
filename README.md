@@ -1,3 +1,4 @@
+[image](https://github.com/cookacounty/cdsgit/blob/master/images/cdsgit-log.png?raw=true)
 # Welcome to CdsGit!
 Cadence Virtuose Git Integration written in SKILL++
 
