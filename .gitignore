@@ -1,0 +1,6 @@
+#Temporary files
+*.*~
+*.log
+
+#My own stuff
+/personal
