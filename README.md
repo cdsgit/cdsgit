@@ -2,10 +2,10 @@
 Cadence Virtuose Git Integration written in SKILL++
 
 ## What is CdsGit?
-CdsGit is a library written in SKILL++ that allows a user to use
-Git to manage their cadence libraries without the burden of
-a Git client that is not designed specifically for the way Cadence
-manages it's files.
+CdsGit is a SKILL++ library written that allows a user to use
+Git to manage their cadence libraries. Unlike other Git clients,
+CdsGit is tailored to the cadence DFII infastructure and makes
+interfacing with Cadence cells easy.
 
 ## Features
 * Full integration of common Git commands into Library manager
