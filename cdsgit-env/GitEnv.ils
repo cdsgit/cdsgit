@@ -1,0 +1,28 @@
+defclass( GitEnv
+   ()
+   (
+      ( global_path  @initform nil @initarg global_path)
+      ( user_path    @initform nil @initarg user_path)
+      ( prefix       @initform nil @initarg prefix )
+      ( varList      @initform nil ); GitEnvVar list
+      ( verbose      @initform t   )
+   )
+)
+
+
+inSkill(
+procedure( GitEnv()
+
+   let( (global_path user_path prefix ge)
+
+      ;Grab a few CDSGIT globals
+      global_path = strcat(cdsgit_path "/global.env")
+      user_path   = cdsgit_userenvpath
+      prefix      = "CDSGIT"
+
+      ge = makeInstance( 'GitEnv ?global_path global_path ?user_path user_path ?prefix prefix)
+
+      ge
+   );let
+)
+)

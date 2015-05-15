@@ -1,0 +1,7 @@
+;Refresh the variable settings
+defmethod( Refresh (( ge GitEnv ))
+
+
+   ;Set Shell Vars
+
+)

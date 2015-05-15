@@ -1,0 +1,17 @@
+;Convert a bool to a string
+defmethod( Bool (( gev GitEnvVar ) @key (toB nil) (toS nil) )
+
+   varValue = gev->value
+
+   if(toS then
+      ;Special case for t and nil
+      if(varValue == nil varValue = "nil")
+      if(varValue == t   varValue = "t")
+   )
+   if(toB then
+      if(varValue == "nil" varValue = nil)
+      if(varValue == "t"   varValue = t)
+   )
+
+   gev->value = varValue
+)

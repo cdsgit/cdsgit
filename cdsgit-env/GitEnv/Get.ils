@@ -1,0 +1,41 @@
+;Get a variable from the settings. Will use default settings
+;if the variable is not found in the user's settings file
+defmethod( Get (( ge GitEnv ) varName @key (forcedPath nil))
+
+   if( ge->verbose printf("========GitEnv Git============\n"))
+
+   varValue = nil
+
+   if(forcedPath then
+      if( ge->verbose printf(strcat("GitEnv Git: Getting variable " varName " from forcedPath " forcedPath "\n")))
+      envList = GetAll(ge forcedPath)
+      envVar = Search(ge varName)
+   else
+
+      ;See if the variable exists in the user's settings
+      if( ge->verbose printf(strcat("GitEnv Git: Getting variable " varName " from " ge->user_path "\n")))
+      envList = GetAll(ge ge->user_path)
+      varValue = Search(ge varName)
+
+      ;If the variable was not found, load the default settings file
+      if( !varValue then
+         if( ge->verbose printf(strcat("GitEnv Git: Getting variable " varName " from " ge->global_path "\n")))
+         envList = GetAll(ge ge->global_path)
+         envVar = Search(ge varName)
+      )
+   )
+
+   ;If nothing was found and the path was not forced, raise an error since the env variable is not defined anywhere
+   if(!envVar && !forcedPath then
+      error(strcat("GitEnv Git: Could not find the enviornment variable " varName \
+      ".\n It must be specified in one of:\n\tUser settings - " ge->user_path "\n\t Default settings - " ge->global_path))
+   )
+
+   if( ge->verbose && varValue printf(strcat("GitEnv Git: Returning variable " varName " value " envVar->value " from " ge->global_path "\n")))
+
+
+   Format(envVar) ;Format the value
+
+   envVar->value
+
+);procedure

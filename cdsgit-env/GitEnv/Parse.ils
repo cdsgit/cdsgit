@@ -1,0 +1,55 @@
+;Parses a list of enviornment variables from a string.
+;Uses Perl regular expressions to identify variables
+defmethod( Parse (( ge GitEnv ) envString )
+
+   if( ge->verbose printf(strcat("GitEnv Parse: Parsing variables from string\n")))
+
+   stringList = parseString(envString "\n")
+
+   envList = list()
+
+   foreach(line stringList
+
+      newEnvVar = ParseLine(ge line)
+
+      if(newEnvVar then
+         envList = cons( newEnvVar envList)
+      else
+         if( ge->verbose printf(strcat("GitEnv Parse: **inValid** String \"" line "\"\n")))
+      );if
+
+   ); foreach
+
+   envList
+
+)
+
+;Parse a single line, return an envVar
+defmethod( ParseLine (( ge GitEnv ) line )
+
+   validString = pcreMatchp(strcat("^" ge->prefix "\\w+\\s*=\\s*\\S+") line)
+
+   if(validString then
+      if( ge->verbose printf(strcat("\tParseLine Valid String \"" line "\"\n")))
+
+      pcreMatchp(strcat("^" ge->prefix "\\w+") line)
+
+      pcreVarName = pcreSubstitute( "\\0" )
+
+      if( ge->verbose printf(strcat("\t\tVariable \"" pcreVarName "\"\n")))
+
+      ;Match the end
+      pcreObj = pcreCompile(".*=[ \t]*|[ \t]+$")
+      pcreVarValue = pcreReplace(pcreObj line "" 0)
+
+      if( ge->verbose printf(strcat("\t\tValue \"" pcreVarValue "\"\n")))
+
+      returnEnvVar = GitEnvVar(?name pcreVarName ?value pcreVarValue)
+
+   else
+      returnEnvVar = nil
+   )
+
+   returnEnvVar
+
+)

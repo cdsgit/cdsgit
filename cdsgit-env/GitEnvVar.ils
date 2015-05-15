@@ -1,0 +1,34 @@
+defclass( GitEnvVar
+   ()
+   (
+      ( name        @initform nil @initarg name    )
+      ( type        @initform nil @initarg type    )
+      ( value       @initform nil @initarg value   )
+      ( isShell     @initform nil @initarg isShell ) ;Is the variable a shell variable
+      ( inform      @initform nil @initarg inform  ) ;Inform the user if the env is non-default
+   )
+)
+
+
+procedure( GitEnvVar( @key (name nil) (type nil) (value nil) (inform nil) )
+
+   isShell = nil
+
+   case(type
+      ("shell"
+         isShell = t
+      )
+      (t
+         nil
+      )
+   )
+
+   makeInstance( 'GitEnvVar
+      ?name    name
+      ?type    type
+      ?value   value
+      ?inform  inform
+      ?isShell isShell
+
+   )
+)

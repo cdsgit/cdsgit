@@ -1,0 +1,13 @@
+;Creates a blank default settings file
+defmethod( Create (( ge GitEnv ) @key (writeString "") )
+
+   fout = outfile(ge->user_path "w")
+
+   fprintf(fout writeString)
+
+   close(fout)
+
+   if( ge->verbose printf("GitEnv Create: Settings file created %s\n" ge->user_path) )
+
+);procedure
+

@@ -1,0 +1,26 @@
+;Save a variable in the user's settings
+;Will override exisiting env variable unless specified
+defmethod( SetShell (( ge GitEnv ) varName @key (override t) )
+
+   shellResponse = getShellEnvVar(varName)
+
+   if( ge->verbose && override printf("GitEnv SetShell: Override shell is set true\n"))
+
+   if( !shellResponse || override then
+
+      if( ge->verbose printf(strcat("GitEnv SetShell: Setting Shell variable " varName " to " varName "\n")))
+      varValue = Get(ge varName)
+      setShellEnvVar(strcat(varName "=" varValue))
+
+      shellResponse = getShellEnvVar(varName)
+
+      if(shellResponse then
+         if( ge->verbose printf(strcat("GitEnv SetShell: Retreived shell variable " varName "=" shellResponse "\n")))
+      else
+         error("GitEnv SetShell: env variable " varName " was not set properly in the shell")
+      )
+   )
+
+   list(varName varValue)
+
+);procedure

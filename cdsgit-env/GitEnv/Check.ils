@@ -1,0 +1,44 @@
+;Checks the enviornment settings and warns if default paths are not being used
+;Returns true if defaults were used, otherwise nil
+
+defmethod( Check (( ge GitEnv ))
+
+   usingDefaults = t
+
+   ;Variables to check
+   envVars = '(
+   "LCBU_LIB_PATH"
+   "LCBU_SKILL"
+   )
+
+   mismatchString = ""
+
+   ;Loop through each variable and check it's state
+   foreach( envVar envVars
+
+      defaultValue = Get(ge envVar ?forcedPath ge->global_path)
+      setValue     = Get(ge envVar)
+
+      if( defaultValue != setValue then
+         mismatchString = strcat( mismatchString "\n" envVar " " setValue)
+         usingDefaults = nil
+      )
+
+   )
+
+   ;Display a warning if defaults were not used
+   if( !usingDefaults then
+
+   hiDisplayAppDBox(?name 'hiform
+      ?dboxBanner "LCBU Setup"
+      ?dboxText sprintf(nil "Info: You are overriding the following default paths:\n%s\n\nBe aware that your data may be different than what is in %s"
+                           mismatchString ge->global_path
+                        )
+      ?buttonLayout 'Close
+      ?dialogStyle 'modeless
+      )
+   )
+
+   ;Return if defaults were used
+   usingDefaults
+)

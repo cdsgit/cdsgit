@@ -1,0 +1,19 @@
+;Find a variable in a list of variables
+defmethod( Search (( ge GitEnv ) varName )
+   returnVar = nil
+   foreach(envVar ge->varList
+
+      currentName = envVar->name
+      if( currentName == varName then
+         varValue = envVar->value
+         returnVar = envVar
+         if( ge->verbose printf( "GitEnv Search: Found variable \"%s\" value \"%s\"\n" returnVar->name returnVar->value) )
+      )
+
+   );foreach
+
+   if(!returnVar printf( "GitEnv Search: Did not find variable %s\n" varName) )
+
+   returnVar
+
+);procedure

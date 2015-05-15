@@ -1,0 +1,19 @@
+;Convert to the proper format
+defmethod( Format (( gev GitEnvVar ) @key (toB nil) (toS nil) )
+
+   ;Special Case for nil and t
+
+   case( envVar->type
+      ("boolean"
+         Bool(ge varValue ?toB t)
+      )
+      ("shell"
+         SetShell(ge)
+      )
+
+
+   )
+
+
+
+)

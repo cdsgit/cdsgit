@@ -1,0 +1,13 @@
+;Get all env variables from a file
+defmethod( GetAll (( ge GitEnv ) settingsPath)
+
+   if( ge->verbose printf("GitEnv GetAll: Getting all variables from %s\n" settingsPath) )
+
+   envString = Open(ge settingsPath)
+
+   ge->varList = Parse(ge envString)
+
+   ge->varList
+
+);
+

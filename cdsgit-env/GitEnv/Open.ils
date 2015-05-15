@@ -1,0 +1,35 @@
+;Open the LCBU settings file
+;Creates a file in ~ if it does not exist
+;Returns a string containing all of the lines in the file
+defmethod( Open (( ge GitEnv ) settingsPath)
+
+   if( ge->verbose printf("GitEnv Open: Loading variables from File\n"))
+
+   ;First see if a user file exists
+   ;If not create a blank one
+   if( !isFile(ge->user_path) then
+      if( ge->verbose printf(strcat("\tGitEnv Open: LCBU settings file " ge->user_path " not found, creating empty file\n")))
+      Create(ge)
+   else
+      if( !isFile(settingsPath) then
+         error(strcat("GitEnv Open: File " settingsPath " not found" \
+                  "\n\tCheck that both \"ge->user_path\" and \"ge->user_path_template\" are properly defined"))
+      else
+         if( ge->verbose printf(strcat("\tGitEnv Open:  user settings file found " settingsPath "\n")))
+      )
+   );
+
+   ;Read in the file
+   fin = infile(settingsPath)
+
+   fileString = ""
+
+   while( gets(s fin)
+      fileString = strcat(fileString s)
+   )
+
+   close(fin)
+
+   fileString
+
+)
