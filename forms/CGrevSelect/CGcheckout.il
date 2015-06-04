@@ -9,7 +9,7 @@ procedure( CGcheckoutForm(gs)
    formCB = "CGcheckoutFormCB()"
 
    Status(gs ?showInfo nil)
-   if( !gs->modified then
+   if( gs->modified then
       Error(gs "Cannot Checkout, you have uncommited modifications\n")
    )
 
