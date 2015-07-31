@@ -42,4 +42,5 @@ procedure( CGciwMenu()
 
 )
 
-CGciwMenu()
+;Don't need this menu to register anymore!
+;CGciwMenu()
