@@ -3,23 +3,28 @@ procedure( CGstatusForm(gs)
 
    importSkillVar(cdsGitAppName)
 
-   ;Strings
-   formHeader = sprintf(nil "%s Status" cdsGitAppName)
-   formHeader = sprintf(nil "%s Status of Path: %s" cdsGitAppName gs->path)
-
 
    ;Get the status from GIT
    Status(gs)
+   
+   ;Get branch info
+   Branch(gs)
 
+   ;Strings
+   formHeader = sprintf(nil "%s Status of Path: %s" cdsGitAppName gs->path)
+   formInfo = sprintf(nil "%s Status --- Branch: %s" cdsGitAppName gs->branch )
+	
    ;Form Parameters
    grid = Gridder(?verbose gs->verbose)
    gridW = grid->width
+   grid->height = 25 ;Shrink the height
    toggleCB = "CGstatusFormToggleCB()"
    radioCB  = "CGstatusFormRadioCB()"
    diffCB   = "CGstatusFormDiffCB()"
    commitCB = "CGstatusFormCommitCB()"
    pushCB   = "CGstatusFormPushCB()"
    rescanCB = "CGstatusFormUpdate()"
+   
 
    reportHeader = list(
       list( "Index Status" 1*gridW 'left 'string t )
@@ -30,7 +35,7 @@ procedure( CGstatusForm(gs)
 
    if( t then
 
-      fr_gspath = hiCreateFrameField( ?name 'fr_gspath ?labelText formHeader )
+      fr_gspath = hiCreateFrameField( ?name 'fr_gspath ?labelText formInfo )
 
       r_filter=hiCreateRadioField(
          ?name 'r_filter
