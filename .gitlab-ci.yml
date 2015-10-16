@@ -1,0 +1,2 @@
+job1:
+  script: "/home/gitlab-runner/site-build/client-sync.rb"
