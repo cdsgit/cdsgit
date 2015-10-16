@@ -12,6 +12,9 @@ procedure( CGbranchSelectForm(gs @key (formTitle "") (formLabel "Select a Branch
       grid = Gridder(?verbose gs->verbose)
    )
    gridW = grid->width
+   
+   Branch(gs)
+   formLabel = sprintf(nil "Current Branch %s --- %s" gs->branch formLabel)
 
    ;l_formlabel = hiCreateLabel( ?name 'l_formlabel ?labelText formLabel )
    fr_formframe = hiCreateFrameField( ?name 'fr_formframe ?labelText formLabel)
