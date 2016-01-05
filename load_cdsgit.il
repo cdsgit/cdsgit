@@ -30,13 +30,13 @@ cdsGitAppName = "CdsGit"
 cdsgit_userenvpath = "~/.cdsgitenv"
 
 CGcoolPath = "~/.cdsgitLicense"
-load(strcat(cdsgit_path "scripts/commands/CGsysCmd.il"))
-load(strcat(cdsgit_path "scripts/commands/CGcool.il"))
+load(strcat(cdsgit_path "/scripts/commands/CGsysCmd.il"))
+load(strcat(cdsgit_path "/scripts/commands/CGcool.il"))
 
 
 ;############# Unlicensed Commands #############
-load(strcat(cdsgit_path "forms/CGregister.il"))
-load(strcat(cdsgit_path "menus/ciw.menu"))
+load(strcat(cdsgit_path "/forms/CGregister.il"))
+load(strcat(cdsgit_path "/menus/ciw.menu"))
 
 
 ;############# CdsGit Shell #############
