@@ -2,7 +2,7 @@
 
 
 
-load(strcat(cdsgit_path "triggers/CGsaveTrigger.il"))
+load(strcat(cdsgit_path "/triggers/CGsaveTrigger.il"))
 
 
 dbRegPostSaveTrigger('CGsaveTrigger)
