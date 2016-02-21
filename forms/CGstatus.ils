@@ -20,7 +20,8 @@ procedure( CGstatusForm(gs)
    grid->height = 25 ;Shrink the height
    toggleCB = "CGstatusFormToggleCB()"
    radioCB  = "CGstatusFormRadioCB()"
-   diffCB   = "CGstatusFormDiffCB()"
+   ;diffCB   = "CGstatusFormDiffCB()"
+   diffCB    = "GMergeGui()"
    commitCB = "CGstatusFormCommitCB()"
    pushCB   = "CGstatusFormPushCB()"
    rescanCB = "CGstatusFormUpdate()"
