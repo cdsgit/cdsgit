@@ -46,3 +46,7 @@ If you have a feature you would like to see or find and issue, please create an 
 * Layout Diff + Merge tool (VERY LITTLE PROGRESS)
    * The layout diff is pretty similar to the schematic, there are just a few more object types like vias. I focus very little on layout so there was not much motivation for me to figure out all the things needed to get a true diff. If you know a lot about the layout tool and can write SKILL, your help is welcome!
 
+## Contributers
+* Aaron Cook - Senior Design Engineer at Allegro Microsystems. Focus on mixed signal circuit design www.linkedin.com/in/aaron-cook-engineer
+
+
