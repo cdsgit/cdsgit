@@ -10,7 +10,7 @@ defmethod( Pull (( gs GitShell ) @key (remote "origin") (args "") (resolve t))
    ;Get the current branch
    Branch(gs)
 
-   syscmd = strcat("cd " gs->root->str " && git pull " remote " " gs->branch " " args)
+   syscmd = strcat("cd " gs->root->str " && git pull --recurse-submodules " remote " " gs->branch " " args)
    result=Cmd(gs syscmd)
 
    if(!result then
