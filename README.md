@@ -30,6 +30,8 @@ loadi( strcat(cdsgit_path "/load_cdsgit.il") )
 load(strcat(getShellEnvVar("CDSGIT_PATH") "/menus/cdsLibMgr.menu"))
 ```
 
+4) Copy in setup/cadence.gitignore to your repository .gitignore to ignore common cadence temporary files (such as lock files).
+
 Example setup files: https://github.com/cdsgit/cdsgit/tree/master/setup
 
 Both the cdsLibMgr.il and .cdsinit can be created in the path where you start Cadence if you do not already have them. There are also copies in the Cadence installation directory if you want to install CdsGit globally.
