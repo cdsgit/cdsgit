@@ -15,7 +15,7 @@ defclass( GitShell
       (viewName @initform "")
 
       ;Dialog
-      (verbose  @initform t   @initarg verbose) ;Verbose messages
+      (verbose  @initform nil @initarg verbose) ;Verbose messages
       (silent   @initform nil @initarg silent)  ;Do not display dialog boxes
 
       ;Properties
