@@ -4,7 +4,7 @@ defmethod( Subtract (( gsp GSpath ) gspS )
 if( GetChar(gsp 1)!="/" || GetChar(ogsp 1) !="/" then
    error("GSpath Subtract: Paths not be relative\nPath-%s OtherPath-%s" gsp->str gspS->str)
 )
-if( Length(gsp) < Length(gspS) then ;gsp must be longer than gspS
+if( LengthCG(gsp) < LengthCG(gspS) then ;gsp must be longer than gspS
    error("GSpath Subtract: Paths not be relative\nPath-%s OtherPath-%s" gsp->str gspS->str)
 )
 
@@ -12,8 +12,8 @@ if( !IsInPath(gsp gspS)
       error("GSpath Subtract: One path must be a subdirectory of the other\nPath-%s OtherPath-%s" gsp->str gspS->str)
 )
 
-if(  Length(gsp) > Length(gspS) then
-   tmpStr = substring( gsp->str Length(gspS)+1 )
+if(  LengthCG(gsp) > LengthCG(gspS) then
+   tmpStr = substring( gsp->str LengthCG(gspS)+1 )
 else
    tmpStr = ""
 )

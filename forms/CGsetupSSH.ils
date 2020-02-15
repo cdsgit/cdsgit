@@ -59,7 +59,7 @@ procedure( CGsetupSSHform()
       hiDisplayForm(cgsetupssh_form)
 
    else
-      Error(gs strcat("Could not open %s" sshKeyPath) )
+      ErrorCG(gs strcat("Could not open %s" sshKeyPath) )
    )
 
 )

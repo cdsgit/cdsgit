@@ -1,11 +1,11 @@
-defmethod( Add (( gs GitShell ) oppath)
+defmethod( AddCG (( gs GitShell ) oppath)
 
    if( oppath && oppath != "" then
       syscmd = strcat("cd " gs->root->str " && git add --all -- " oppath)
       result=Cmd(gs syscmd)
 
       if(!result then
-         Error(gs sprintf(nil "Not a valid path %s\nCommand:%s" oppath syscmd))
+         ErrorCG(gs sprintf(nil "Not a valid path %s\nCommand:%s" oppath syscmd))
       )
    )
 

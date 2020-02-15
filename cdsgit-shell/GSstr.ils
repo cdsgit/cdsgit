@@ -13,10 +13,10 @@ procedure( GSstr(str)
 )
 
 ;Reverse a string
-defmethod( Reverse (( gss GSstr))
+defmethod( ReverseCG (( gss GSstr))
 
    resultStr=""
-   len = Length(gss)
+   len = LengthCG(gss)
 
    for(i 1 len
       resultStr = strcat(resultStr GetChar(gss len-(i-1)) )
@@ -27,7 +27,7 @@ defmethod( Reverse (( gss GSstr))
 )
 
 
-defmethod( Length (( gss GSstr))
+defmethod( LengthCG (( gss GSstr))
    len = strlen(gss->str)
    gss->length = len
    len
@@ -47,7 +47,7 @@ defmethod( GetChar (( gss GSstr) index @key (str nil) )
 )
 
 ;Remove whitespace from string
-defmethod( Strip (( gss GSstr ) @key (str_begin t) (str_end t) (rexStr " \t\n") )
+defmethod( StripCG (( gss GSstr ) @key (str_begin t) (str_end t) (rexStr " \t\n") )
 
    str = gss->str
 

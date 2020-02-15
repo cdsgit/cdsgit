@@ -19,7 +19,7 @@ defmethod( Status (( gs GitShell ) @key (showInfo t) )
    response = Cmd(gs status_cmd)
 
    if(!response then
-      Error(gs sprintf(nil "git status on path %s failed" gs->path))
+      ErrorCG(gs sprintf(nil "git status on path %s failed" gs->path))
    )
 
    if(response=="" then
@@ -80,7 +80,7 @@ let( (path)
    foreach( gsp gs->paths
 
       ;Filter the path
-      gsp_tmp = Clone(gsp)
+      gsp_tmp = CloneCG(gsp)
 
       trim_depth  = gs->filter - (3 - gsp_tmp->pathDepth)
 

@@ -17,7 +17,7 @@ defmethod( Depth (( gs GitShell ))
             gs->ideal_filter = 1
          )
          (t
-            Error(gs "Depth(gs) failed: dd->type is unknown!")
+            ErrorCG(gs "Depth(gs) failed: dd->type is unknown!")
          )
       )
    else

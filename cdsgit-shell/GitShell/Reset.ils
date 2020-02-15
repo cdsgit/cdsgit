@@ -7,7 +7,7 @@ defmethod( Reset (( gs GitShell ) oppath)
       result=Cmd(gs syscmd)
 
       if(!reset then
-         Error(gs sprintf(nil "Not a valid path %s\nCommand:%s" oppath syscmd))
+         ErrorCG(gs sprintf(nil "Not a valid path %s\nCommand:%s" oppath syscmd))
       )
    )
    t

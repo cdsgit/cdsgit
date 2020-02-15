@@ -34,7 +34,7 @@ procedure( CGBSmergeFormCB()
             gs->path = gs->root->str
             CGmergeResolveForm(gs)
          else
-            Error(gs "Merge failed due to unresolved conflicts")
+            ErrorCG(gs "Merge failed due to unresolved conflicts")
          )
       )
    )

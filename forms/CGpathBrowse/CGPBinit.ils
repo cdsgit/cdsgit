@@ -14,7 +14,7 @@ procedure( CGPBinitForm()
 
 procedure( CGPBinitFormCB()
 
-   gsinit_path = Strip(GSstr(cgpathbrowseform->sf_pathname->value))
+   gsinit_path = StripCG(GSstr(cgpathbrowseform->sf_pathname->value))
 
    gs = GitShell( ?path gsinit_path ?skipCheck t)
 
@@ -24,7 +24,7 @@ procedure( CGPBinitFormCB()
    if( gs->valid then
       Info(gs sprintf(nil "Git Repository Initialized in %s" gsinit_path))
    else
-      Error(gs sprintf(nil "Could not Initialize a Git Repository in %s\nCheck that you have permissions" gsinit_path))
+      ErrorCG(gs sprintf(nil "Could not Initialize a Git Repository in %s\nCheck that you have permissions" gsinit_path))
    )
 
 )

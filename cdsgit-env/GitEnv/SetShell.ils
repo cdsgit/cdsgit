@@ -9,7 +9,7 @@ defmethod( SetShell (( ge GitEnv ) varName @key (override t) )
    if( !shellResponse || override then
 
       if( ge->verbose printf(strcat("GitEnv SetShell: Setting Shell variable " varName " to " varName "\n")))
-      varValue = Get(ge varName)
+      varValue = GetCG(ge varName)
       setShellEnvVar(strcat(varName "=" varValue))
 
       shellResponse = getShellEnvVar(varName)

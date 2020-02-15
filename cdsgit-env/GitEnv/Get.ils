@@ -1,6 +1,6 @@
 ;Get a variable from the settings. Will use default settings
 ;if the variable is not found in the user's settings file
-defmethod( Get (( ge GitEnv ) varName @key (forcedPath nil))
+defmethod( GetCG (( ge GitEnv ) varName @key (forcedPath nil))
 
    if( ge->verbose printf("========GitEnv Git============\n"))
 

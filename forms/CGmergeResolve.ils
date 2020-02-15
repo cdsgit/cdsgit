@@ -179,7 +179,7 @@ procedure( CGmergeResolveFormAddCB(option)
       oppath = nthelem(3 fchoice)
 
       Checkout(gs strcat("--" option) ?oppath oppath)
-      Add(gs oppath)
+      AddCG(gs oppath)
 
       case( option
          ("ours"   cgmergeresolve_form->rf_ours   = CGappendRFchoices(cgmergeresolve_form->rf_ours   fchoice) )

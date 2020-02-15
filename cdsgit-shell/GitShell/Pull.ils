@@ -14,7 +14,7 @@ defmethod( Pull (( gs GitShell ) @key (remote "origin") (args "") (resolve t))
    result=Cmd(gs syscmd)
 
    if(!result then
-      Error(gs sprintf(nil "Pull failed\nCommand:%s\nResponse%s" syscmd result))
+      ErrorCG(gs sprintf(nil "Pull failed\nCommand:%s\nResponse%s" syscmd result))
    else
       Info(gs result)
    )
@@ -24,7 +24,7 @@ defmethod( Pull (( gs GitShell ) @key (remote "origin") (args "") (resolve t))
          gs->path = gs->root->str
          CGmergeResolveForm(gs)
       else
-         Error(gs "Pull failed due to unresolved conflicts")
+         ErrorCG(gs "Pull failed due to unresolved conflicts")
       )
    )
    Refresh(gs)

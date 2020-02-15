@@ -77,7 +77,7 @@ procedure( CGBSbranchopCB(branchop)
    parent_branch = nthelem(1 rf_branches_value)
 
    if( !rf_branches_value then
-      Error(gs "You must select a Branch")
+      ErrorCG(gs "You must select a Branch")
    )
 
    if( branchop == "create" || branchop == "rename" then
@@ -85,7 +85,7 @@ procedure( CGBSbranchopCB(branchop)
 
       ;Check the the branch name exists
       if( sf_bname_value == "" then
-         Error(gs "You must enter a branch name")
+         ErrorCG(gs "You must enter a branch name")
       )
 
       CheckFormat(gs sf_bname_value)

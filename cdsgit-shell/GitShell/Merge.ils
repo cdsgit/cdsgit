@@ -10,7 +10,7 @@ defmethod( MergeCG (( gs GitShell ) merge_args)
       result=Cmd(gs syscmd)
 
       if(!result then
-         Error(gs sprintf(nil "Merge failed\nCommand:%s" syscmd))
+         ErrorCG(gs sprintf(nil "Merge failed\nCommand:%s" syscmd))
       )
    )
 
@@ -22,7 +22,7 @@ defmethod( MergeCG (( gs GitShell ) merge_args)
       cond(
          (rexMatchp("^warning" first_line) result = "warning")
          (rexMatchp("^error" first_line)
-            Error(gs sprintf(nil "Cannot Merge. Do you have modified files in your work tree?\n\n'git merge' returned:\n%s" result))
+            ErrorCG(gs sprintf(nil "Cannot Merge. Do you have modified files in your work tree?\n\n'git merge' returned:\n%s" result))
          )
          (t
             Refresh(gs)

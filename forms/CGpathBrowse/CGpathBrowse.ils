@@ -61,7 +61,7 @@ procedure( CGpathBrowseFD(formMode)
    )
    retval=buildString(retval)
    retval=simplifyFilename(retval)
-   retval=Strip(GSstr(retval)); Get rid of white space at the end
+   retval=StripCG(GSstr(retval)); Get rid of white space at the end
    printf("%L\n" retval)
    cgpathbrowseform->sf_pathname->value = retval
 )

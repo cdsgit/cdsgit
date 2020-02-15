@@ -35,7 +35,7 @@ let(
 )
 
 ;Add Bindkeys
-defmethod( Add (( b Binder) bkList)
+defmethod( AddCG (( b Binder) bkList)
    bkLength = length(car(bkList))
    if( b->verbose printf("bkList length %L\n" bkLength) )
 

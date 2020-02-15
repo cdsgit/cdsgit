@@ -72,7 +72,7 @@ procedure( CGMlmgrCB(_menuName lib _c _v _f _cat)
       ("CGMcommit"        CGstatusForm(gs)   ); Currently Commit and status do the same thing
       ("CGMexport"        CGexportForm(gs)   )
       ("CGMcheckout"      CGcheckoutForm(gs) )
-      ("CGMadd"           Add(gs gs->path)   )
+      ("CGMadd"           AddCG(gs gs->path)   )
       ("CGMreset"         Reset(gs gs->path) )
       ("CGMdiscard"       Discard(gs)        )
       ;Merge
@@ -90,7 +90,7 @@ procedure( CGMlmgrCB(_menuName lib _c _v _f _cat)
       ;Diff
       ("CGMdiff"          GMergeGui() )
       ;Default
-      (t              Error( GitShell(?path "") strcat("Function " _menuName " has not been implemented yet!")  ) )
+      (t              ErrorCG( GitShell(?path "") strcat("Function " _menuName " has not been implemented yet!")  ) )
 
    )
 

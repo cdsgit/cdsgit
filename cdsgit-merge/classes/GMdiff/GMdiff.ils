@@ -143,7 +143,7 @@ defmethod( ChangeState (( diff GMdiff ) )
       else
          if( diff->isDst? then
             ChangeChildrenState(diff)
-            Destroy(diff)
+            DestroyCG(diff)
          else
             Create(diff)
             ChangeChildrenState(diff)
@@ -160,7 +160,7 @@ defmethod( ChangeState (( diff GMdiff ) )
             ChangeChildrenState(diff)
          else
             ChangeChildrenState(diff)
-            Destroy(diff)
+            DestroyCG(diff)
          )
       )
    )
