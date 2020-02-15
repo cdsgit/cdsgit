@@ -27,7 +27,7 @@ procedure( CGBSmergeFormCB()
    if(rf_branches_value then
       src_branch = nthelem(1 rf_branches_value)
       if( gs->verbose printf("CGBSmergeFormCB: Attempting to merge %L",src_branch))
-      result = Merge(gs src_branch)
+      result = MergeCG(gs src_branch)
       if( result == "warning" then
          response = Dialog(gs "Merge failed due to conflicts\nOpen the Merge confilt resolve form?")
          if(response then

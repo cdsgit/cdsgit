@@ -1673,7 +1673,7 @@ defmethod( GetAll (( ge GitEnv ) settingsPath)
 
    if( ge->verbose printf("GitEnv GetAll: Getting all variables from %s\n" settingsPath) )
 
-   envString = Open(ge settingsPath)
+   envString = OpenCG(ge settingsPath)
 
    ge->varList = Parse(ge envString)
 
@@ -1693,19 +1693,19 @@ defmethod( Get (( ge GitEnv ) varName @key (forcedPath nil))
    if(forcedPath then
       if( ge->verbose printf(strcat("GitEnv Git: Getting variable " varName " from forcedPath " forcedPath "\n")))
       envList = GetAll(ge forcedPath)
-      envVar = Search(ge varName)
+      envVar = SearchCG(ge varName)
    else
 
       
       if( ge->verbose printf(strcat("GitEnv Git: Getting variable " varName " from " ge->user_path "\n")))
       envList = GetAll(ge ge->user_path)
-      varValue = Search(ge varName)
+      varValue = SearchCG(ge varName)
 
       
       if( !varValue then
          if( ge->verbose printf(strcat("GitEnv Git: Getting variable " varName " from " ge->global_path "\n")))
          envList = GetAll(ge ge->global_path)
-         envVar = Search(ge varName)
+         envVar = SearchCG(ge varName)
       )
    )
 
@@ -1869,7 +1869,7 @@ defmethod( Set (( ge GitEnv ) setName setValue )
 
    foutString = ""
 
-   envString = Open(ge ge->user_path)
+   envString = OpenCG(ge ge->user_path)
    strList = parseString(envString "\n")
 
    writeFile = nil
@@ -2207,7 +2207,7 @@ procedure( CGmergeAbortCB(gs)
    response = Dialog(gs "Aborting Merge will cause all uncommitted changes to be lost!!\nProceed?")
 
    if( response then
-      Merge(gs "--abort")
+      MergeCG(gs "--abort")
    )
 
 )
@@ -3421,7 +3421,7 @@ procedure( CGBSmergeFormCB()
    if(rf_branches_value then
       src_branch = nthelem(1 rf_branches_value)
       if( gs->verbose printf("CGBSmergeFormCB: Attempting to merge %L",src_branch))
-      result = Merge(gs src_branch)
+      result = MergeCG(gs src_branch)
       if( result == "warning" then
          response = Dialog(gs "Merge failed due to conflicts\nOpen the Merge confilt resolve form?")
          if(response then

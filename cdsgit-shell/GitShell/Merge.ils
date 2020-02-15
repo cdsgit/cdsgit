@@ -3,7 +3,7 @@
 */
 
 
-defmethod( Merge (( gs GitShell ) merge_args)
+defmethod( MergeCG (( gs GitShell ) merge_args)
 
    if( merge_args && merge_args != "" then
       syscmd = strcat("cd " gs->root->str " && git merge " merge_args)
