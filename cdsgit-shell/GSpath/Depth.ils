@@ -4,7 +4,7 @@ defmethod( Depth (( gsp GSpath))
    depth = 0
    clast = ""
 
-   len = Length(gsp)
+   len = LengthCG(gsp)
 
    for( cindex 1 len
       c = GetChar(gsp cindex)

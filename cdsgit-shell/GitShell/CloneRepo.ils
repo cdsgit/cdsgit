@@ -9,19 +9,19 @@ defmethod( CloneRepo (( gs GitShell ))
          result=Cmd(gs syscmd)
 
          if(!result then
-            Error(gs sprintf(nil "Not a valid url %s\nCommand:%s" gs->url syscmd))
+            ErrorCG(gs sprintf(nil "Not a valid url %s\nCommand:%s" gs->url syscmd))
          else
 
             badresult = car( parseString(result) ) == "fatal:"
 
             if(badresult then
-               Error(gs sprintf(nil "Clone Failed!\n URL\n  %s\nDestination\n  %s\nResponse\n  %s" gs->url gs->path response) )
+               ErrorCG(gs sprintf(nil "Clone Failed!\n URL\n  %s\nDestination\n  %s\nResponse\n  %s" gs->url gs->path response) )
             )
 
             Info(gs sprintf(nil "Clone Success!\n URL\n  %s\nDestination\n  %s" gs->url gs->path) )
          )
       else
-         Error(gs sprintf(nil "Please enter a URL to clone!\n %L" gs->url) )
+         ErrorCG(gs sprintf(nil "Please enter a URL to clone!\n %L" gs->url) )
       )
    )
 

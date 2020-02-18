@@ -11,7 +11,7 @@ defmethod( Push (( gs GitShell ) @key (remote "origin") (args ""))
    result=Cmd(gs syscmd)
 
    if(!result then
-      Error(gs sprintf(nil "Push failed\nCommand:%s\nResponse%s" syscmd result))
+      ErrorCG(gs sprintf(nil "Push failed\nCommand:%s\nResponse%s" syscmd result))
    else
       Info(gs result)
    )

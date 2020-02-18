@@ -6,6 +6,6 @@ defmethod( FullPath ((  gsp GSpath  ))
    )
 
    fullStr = strcat(gsp->gs->root->str "/" gsp->str)
-   fullGsp = Clone(gsp ?str fullStr)
+   fullGsp = CloneCG(gsp ?str fullStr)
    fullGsp
 )

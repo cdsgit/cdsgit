@@ -37,7 +37,7 @@ defmethod( Cmd (( gs GitShell ) sysCommand @key (ignoreFatal nil))
          responseParse = parseString(response "\n")
 
          if( pcreMatchp( "^fatal" car(responseParse)) || pcreMatchp( "^error" car(responseParse))  then
-            Error(gs sprintf(nil "Git command returned fatal:\n%s" response))
+            ErrorCG(gs sprintf(nil "Git command returned fatal:\n%s" response))
          )
       )
    )

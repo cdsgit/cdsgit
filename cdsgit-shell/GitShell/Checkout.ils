@@ -15,7 +15,7 @@ defmethod( Checkout (( gs GitShell ) gitSHA @key (oppath ".") (args nil) )
       if( gitSHA && gitSHA !="" then
          Cmd(gs strcat("cd " gs->path " && git checkout " gitSHA " -- " oppath) )
       else
-         Error(gs "GitShell Checkout: Must select a valid SHA")
+         ErrorCG(gs "GitShell Checkout: Must select a valid SHA")
       )
    )
    Refresh(gs)

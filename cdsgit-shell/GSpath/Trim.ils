@@ -8,13 +8,13 @@ defmethod( Trim (( gsp GSpath ) @key (loop 1) (reverse t))
    ;If reverse = t - Remove tail (right) end of path
    ;Loop repeats
 
-   if(reverse Reverse(gsp) )
+   if(reverse ReverseCG(gsp) )
 
    for(i 1 loop
       resultStr = trimHelper(gsp)
    )
 
-   if(reverse Reverse(gsp) )
+   if(reverse ReverseCG(gsp) )
 
    gsp->str
 )
@@ -30,7 +30,7 @@ procedure( trimHelper(gsp)
 
    resultStr = ""
 
-   len = Length(gsp)
+   len = LengthCG(gsp)
 
    found = nil
 

@@ -311,7 +311,7 @@ defmethod( GetParentObj (( inst GMobj) )
 
 )
 
-defmethod( Destroy (( inst GMobj )  )
+defmethod( DestroyCG (( inst GMobj )  )
 
    if( inst->isDst? then
       StoreAttrs(inst)

@@ -9,7 +9,7 @@ defmethod( CheckFormat (( gs GitShell ) refname)
       response = Cmd(gs strcat("git check-ref-format --branch \"" refname "\"") )
 
    else
-      Error(gs "GitShell CheckFormat: refname must be a string")
+      ErrorCG(gs "GitShell CheckFormat: refname must be a string")
    )
    response
 

@@ -25,14 +25,14 @@ let( (i)
 
    /* Modified, should always be full L and relative R
    ;Remove leading and trailing "/"
-   Strip(strL ?str_begin nil ?str_end t ?rexStr "/")
-   Strip(strR ?str_begin t ?str_end nil ?rexStr "/")
+   StripCG(strL ?str_begin nil ?str_end t ?rexStr "/")
+   StripCG(strR ?str_begin t ?str_end nil ?rexStr "/")
    */
 
    if(gsp->verbose printf("String Convolve\n\tstrL-%s\n\tstrR-%s\n" strL->str strR->str) )
 
-   lenL = Length(strL)
-   lenR = Length(strR)
+   lenL = LengthCG(strL)
+   lenR = LengthCG(strR)
 
 
    ;i represents an index of GSP where i=1 is the rightmost char

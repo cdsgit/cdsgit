@@ -16,7 +16,7 @@ myBindkeys = list(
 
 bk = Binder(?verbose t)
 
-Add(bk myBindkeys)
+AddCG(bk myBindkeys)
 
 
 

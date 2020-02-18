@@ -1,5 +1,5 @@
 ;Determing if the path is a file or directory
-defmethod( Type ((gsp GSpath))
+defmethod( TypeCG ((gsp GSpath))
 
       gsp->isDir  = isDir(gsp->str)
       gsp->isFile = isFile(gsp->str)

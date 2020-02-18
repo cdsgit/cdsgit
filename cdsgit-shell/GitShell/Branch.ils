@@ -17,7 +17,7 @@ defmethod( Branch (( gs GitShell ) @key (args "") (showCurrent t) )
    result=Cmd(gs syscmd)
 
    if(!result then
-      Error(gs sprintf(nil "Not a valid path %s\nCommand:%s" gs->root->str syscmd))
+      ErrorCG(gs sprintf(nil "Not a valid path %s\nCommand:%s" gs->root->str syscmd))
    else
 
       foreach(line parseString(result "\n")

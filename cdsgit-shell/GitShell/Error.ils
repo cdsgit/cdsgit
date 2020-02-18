@@ -1,7 +1,7 @@
 ;Return an error
 
 
-defmethod( Error (( gs GitShell ) errStr)
+defmethod( ErrorCG (( gs GitShell ) errStr)
 
 
    hiDisplayAppDBox(?name 'gitShellErrorForm

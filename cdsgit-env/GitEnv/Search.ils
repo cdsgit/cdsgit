@@ -1,5 +1,5 @@
 ;Find a variable in a list of variables
-defmethod( Search (( ge GitEnv ) varName )
+defmethod( SearchCG (( ge GitEnv ) varName )
    returnVar = nil
    foreach(envVar ge->varList
 

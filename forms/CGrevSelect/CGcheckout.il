@@ -10,7 +10,7 @@ procedure( CGcheckoutForm(gs)
 
    Status(gs ?showInfo nil)
    if( gs->modified then
-      Error(gs "Cannot Checkout, you have uncommited modifications\n")
+      ErrorCG(gs "Cannot Checkout, you have uncommited modifications\n")
    )
 
    CGrevSelectForm(gs ?formTitle formTitle ?formCB formCB)
@@ -25,7 +25,7 @@ procedure( CGcheckoutFormCB()
    gs = cgrevselect_form->gs
 
    if( !gs->valid then
-      Error(gs "Object is not in a valid git repository")
+      ErrorCG(gs "Object is not in a valid git repository")
    )
 
    if(revSelected then
@@ -34,7 +34,7 @@ procedure( CGcheckoutFormCB()
 
       Status(gs ?showInfo nil)
       if( gs->modified then
-         Error(gs "Cannot Checkout, you have uncommited modifications\n")
+         ErrorCG(gs "Cannot Checkout, you have uncommited modifications\n")
       else
          Checkout(gs gitSHA)
          Reset(gs gs->path)

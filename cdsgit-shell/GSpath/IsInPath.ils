@@ -16,12 +16,12 @@ if( GetChar(gsp 1)!="/" || GetChar(ogsp 1) !="/" then
 )
 
 matched = nil
-if( Length(gsp) < Length(ogsp) then ;Path cannot be within the other if it is shorter
+if( LengthCG(gsp) < LengthCG(ogsp) then ;Path cannot be within the other if it is shorter
    matched = nil
 else
 
    matched = t
-   for(i 1 Length(ogsp)
+   for(i 1 LengthCG(ogsp)
 
       cho = GetChar(ogsp i)
       chi = GetChar(gsp i)

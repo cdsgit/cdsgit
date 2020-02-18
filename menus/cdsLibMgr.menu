@@ -29,7 +29,7 @@ lmgrCreateMenuItem("CGMseparator2"   "separator" '( ("callback" ("")) ) )
 lmgrCreateMenuItem("CGMseparator3"   "separator" '( ("callback" ("")) ) )
 lmgrCreateMenuItem("CGMseparator4"   "separator" '( ("callback" ("")) ) )
 
-lmgrCreateMenuItem("CGMgui"       "simple"  '( ("label" "Git-Gui")          ("callback" ("CGMlmgrCB")) ) )
+lmgrCreateMenuItem("CGMgui"       "simple"  '( ("label" "Git GUI")          ("callback" ("CGMlmgrCB")) ) )
 
 lmgrCreateMenuItem("CGMinit"      "simple"  '( ("label" "Init")               ("callback" ("CGMlmgrCB")) ) )
 lmgrCreateMenuItem("CGMstatusAll" "simple"  '( ("label" "List Repositories")  ("callback" ("CGMlmgrCB")) ) )

@@ -20,7 +20,7 @@ procedure( CGexportFormCB()
    revSelected = CGgetRFchoices(cgrevselect_form->rf_revs)
 
    if( !gs->valid then
-      Error(gs "Object is not in a valid git repository")
+      ErrorCG(gs "Object is not in a valid git repository")
    )
 
    if(revSelected then

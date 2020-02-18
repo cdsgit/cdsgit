@@ -5,10 +5,10 @@ defmethod( Root (( gs GitShell ))
    result=Cmd(gs syscmd)
 
    if(!result then
-      Error(gs sprintf(nil "Not a valid path %s\nCommand:%s" oppath syscmd))
+      ErrorCG(gs sprintf(nil "Not a valid path %s\nCommand:%s" oppath syscmd))
    else
       gss_result=GSpath(result)
-      Strip(gss_result)
+      StripCG(gss_result)
       gs->root = gss_result
    )
 

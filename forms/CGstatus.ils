@@ -175,7 +175,7 @@ procedure( CGstatusFormToggleCB()
          oppath = nthelem(3 fchoice)
 
          case(operation
-            ("add"     Add(gs oppath ) )
+            ("add"     AddCG(gs oppath ) )
             ("reset" Reset(gs oppath ) )
             (t error("invalied Toggle operation"))
          )

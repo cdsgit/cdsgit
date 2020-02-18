@@ -1,7 +1,7 @@
 ;Open the LCBU settings file
 ;Creates a file in ~ if it does not exist
 ;Returns a string containing all of the lines in the file
-defmethod( Open (( ge GitEnv ) settingsPath)
+defmethod( OpenCG (( ge GitEnv ) settingsPath)
 
    if( ge->verbose printf("GitEnv Open: Loading variables from File\n"))
 

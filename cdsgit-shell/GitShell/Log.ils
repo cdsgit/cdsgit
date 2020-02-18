@@ -11,7 +11,7 @@ let( (path)
    path = gs->path
 
    if( !branchname then
-      Error(gs "GitShell Log: branchname cannot be nil")
+      ErrorCG(gs "GitShell Log: branchname cannot be nil")
    )
 
    if(gs->verbose printf("LCBUgitRevs: Reading git log\n"))
@@ -21,7 +21,7 @@ let( (path)
    response = Cmd(gs gitLogCmd)
 
    if( response=="" || !response
-      Error(gs sprintf(nil "Path %s has an empty git log\nDo revisions of it exist in the repository?" gs->path))
+      ErrorCG(gs sprintf(nil "Path %s has an empty git log\nDo revisions of it exist in the repository?" gs->path))
    )
 
    lineList = parseString(response "\n")
@@ -39,7 +39,7 @@ let( (path)
 
             ;Pack up the last commit
             if(logCount > 0 then
-               gitLog = Strip(GSstr(gitLog))
+               gitLog = StripCG(GSstr(gitLog))
                revList = cons(list(gitCommit gitAuthor gitDate gitLog) revList)
             )
 

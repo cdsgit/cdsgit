@@ -24,7 +24,7 @@ defmethod( Commit (( gs GitShell ) commit_log @key (merge nil) )
          result=Cmd(gs syscmd)
 
          if(!result then
-            Error(gs sprintf(nil "Not a valid path %s\nCommand:%s" gs->path syscmd))
+            ErrorCG(gs sprintf(nil "Not a valid path %s\nCommand:%s" gs->path syscmd))
          )
       )
    else

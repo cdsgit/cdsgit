@@ -14,7 +14,7 @@ defmethod( Export (( gs GitShell ) gitSHA)
 
    else
 
-      Error(gs "Must select a valid SHA")
+      ErrorCG(gs "Must select a valid SHA")
 
    )
 

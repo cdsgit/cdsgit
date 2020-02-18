@@ -1,10 +1,10 @@
-defmethod( Set (( ge GitEnv ) setName setValue )
+defmethod( SetCG (( ge GitEnv ) setName setValue )
 
    if( ge->verbose printf("========GitEnv Set============\n"))
 
    printf(strcat("GitEnv Set: Setting variable " setName " to " setValue " in " ge->user_path "\n"))
 
-   globalValue = Get(ge setName ?forcedPath ge->global_path)
+   globalValue = GetCG(ge setName ?forcedPath ge->global_path)
 
    ;Check that the name and values are legal
    line =  strcat(setName " = " setValue)
@@ -26,7 +26,7 @@ defmethod( Set (( ge GitEnv ) setName setValue )
 
    foutString = ""; Output string that will be written to file
 
-   envString = Open(ge ge->user_path)
+   envString = OpenCG(ge ge->user_path)
    strList = parseString(envString "\n")
 
    writeFile = nil

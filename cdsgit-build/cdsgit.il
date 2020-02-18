@@ -323,10 +323,10 @@ procedure( GSstr(str)
 )
 
 
-defmethod( Reverse (( gss GSstr))
+defmethod( ReverseCG (( gss GSstr))
 
    resultStr=""
-   len = Length(gss)
+   len = LengthCG(gss)
 
    for(i 1 len
       resultStr = strcat(resultStr GetChar(gss len-(i-1)) )
@@ -337,7 +337,7 @@ defmethod( Reverse (( gss GSstr))
 )
 
 
-defmethod( Length (( gss GSstr))
+defmethod( LengthCG (( gss GSstr))
    len = strlen(gss->str)
    gss->length = len
    len
@@ -357,7 +357,7 @@ defmethod( GetChar (( gss GSstr) index @key (str nil) )
 )
 
 
-defmethod( Strip (( gss GSstr ) @key (str_begin t) (str_end t) (rexStr " \t\n") )
+defmethod( StripCG (( gss GSstr ) @key (str_begin t) (str_end t) (rexStr " \t\n") )
 
    str = gss->str
 
@@ -402,14 +402,14 @@ procedure( GSpath(str @key (indexStatus nil) (treeStatus nil) (gs nil) )
       ?gs gs
    )
 
-   Type(newGsp)
+   TypeCG(newGsp)
 
    newGsp
 
 )
 
 
-defmethod( Clone ((gsp GSpath) @key (str gsp->str) )
+defmethod( CloneCG ((gsp GSpath) @key (str gsp->str) )
 
    gsp_clone = GSpath( str
       ?indexStatus gsp->indexStatus
@@ -423,7 +423,7 @@ defmethod( Clone ((gsp GSpath) @key (str gsp->str) )
    gsp_clone->verbose   = gsp->verbose
    gsp_clone->depth     = gsp->depth
 
-   Type(gsp_clone)
+   TypeCG(gsp_clone)
 
    gsp_clone
 )
@@ -437,13 +437,13 @@ defmethod( Trim (( gsp GSpath ) @key (loop 1) (reverse t))
    
    
 
-   if(reverse Reverse(gsp) )
+   if(reverse ReverseCG(gsp) )
 
    for(i 1 loop
       resultStr = trimHelper(gsp)
    )
 
-   if(reverse Reverse(gsp) )
+   if(reverse ReverseCG(gsp) )
 
    gsp->str
 )
@@ -459,7 +459,7 @@ procedure( trimHelper(gsp)
 
    resultStr = ""
 
-   len = Length(gsp)
+   len = LengthCG(gsp)
 
    found = nil
 
@@ -489,7 +489,7 @@ defmethod( Depth (( gsp GSpath))
    depth = 0
    clast = ""
 
-   len = Length(gsp)
+   len = LengthCG(gsp)
 
    for( cindex 1 len
       c = GetChar(gsp cindex)
@@ -563,8 +563,8 @@ let( (i)
 
    if(gsp->verbose printf("String Convolve\n\tstrL-%s\n\tstrR-%s\n" strL->str strR->str) )
 
-   lenL = Length(strL)
-   lenR = Length(strR)
+   lenL = LengthCG(strL)
+   lenR = LengthCG(strR)
 
 
    
@@ -628,7 +628,7 @@ defmethod( Subtract (( gsp GSpath ) gspS )
 if( GetChar(gsp 1)!="/" || GetChar(ogsp 1) !="/" then
    error("GSpath Subtract: Paths not be relative\nPath-%s OtherPath-%s" gsp->str gspS->str)
 )
-if( Length(gsp) < Length(gspS) then 
+if( LengthCG(gsp) < LengthCG(gspS) then
    error("GSpath Subtract: Paths not be relative\nPath-%s OtherPath-%s" gsp->str gspS->str)
 )
 
@@ -636,8 +636,8 @@ if( !IsInPath(gsp gspS)
       error("GSpath Subtract: One path must be a subdirectory of the other\nPath-%s OtherPath-%s" gsp->str gspS->str)
 )
 
-if(  Length(gsp) > Length(gspS) then
-   tmpStr = substring( gsp->str Length(gspS)+1 )
+if(  LengthCG(gsp) > LengthCG(gspS) then
+   tmpStr = substring( gsp->str LengthCG(gspS)+1 )
 else
    tmpStr = ""
 )
@@ -647,7 +647,7 @@ resultPath
 
 )
 
-defmethod( Type ((gsp GSpath))
+defmethod( TypeCG ((gsp GSpath))
 
       gsp->isDir  = isDir(gsp->str)
       gsp->isFile = isFile(gsp->str)
@@ -679,12 +679,12 @@ if( GetChar(gsp 1)!="/" || GetChar(ogsp 1) !="/" then
 )
 
 matched = nil
-if( Length(gsp) < Length(ogsp) then 
+if( LengthCG(gsp) < LengthCG(ogsp) then
    matched = nil
 else
 
    matched = t
-   for(i 1 Length(ogsp)
+   for(i 1 LengthCG(ogsp)
 
       cho = GetChar(ogsp i)
       chi = GetChar(gsp i)
@@ -711,7 +711,7 @@ defmethod( FullPath ((  gsp GSpath  ))
    )
 
    fullStr = strcat(gsp->gs->root->str "/" gsp->str)
-   fullGsp = Clone(gsp ?str fullStr)
+   fullGsp = CloneCG(gsp ?str fullStr)
    fullGsp
 )
 
@@ -751,7 +751,7 @@ defmethod( GetLib (( gsp GSpath ) )
 
 
 
-defmethod( Error (( gs GitShell ) errStr)
+defmethod( ErrorCG (( gs GitShell ) errStr)
 
 
    hiDisplayAppDBox(?name 'gitShellErrorForm
@@ -816,7 +816,7 @@ defmethod( Depth (( gs GitShell ))
             gs->ideal_filter = 1
          )
          (t
-            Error(gs "Depth(gs) failed: dd->type is unknown!")
+            ErrorCG(gs "Depth(gs) failed: dd->type is unknown!")
          )
       )
    else
@@ -877,7 +877,7 @@ defmethod( SetRoot (( gs GitShell ))
 defmethod( Check (( gs GitShell ))
 
    if( !isDir(gs->path) && gs->path != ""
-      Error(gs sprintf(nil "GitShell Check -- %L not a directory.\nSupport for files needs to be added" gs->path) )
+      ErrorCG(gs sprintf(nil "GitShell Check -- %L not a directory.\nSupport for files needs to be added" gs->path) )
    )
 
    syscmd = strcat("cd " gs->path " && git rev-parse --is-inside-work-tree ")
@@ -886,7 +886,7 @@ defmethod( Check (( gs GitShell ))
 
    if(result!="true\n" then
       gs->valid = nil
-      if( !gs->silent Error(gs sprintf(nil "Not a valid Git repository %s" gs->path)) )
+      if( !gs->silent ErrorCG(gs sprintf(nil "Not a valid Git repository %s" gs->path)) )
    else
       gs->valid = t
    )
@@ -932,7 +932,7 @@ defmethod( Cmd (( gs GitShell ) sysCommand @key (ignoreFatal nil))
          responseParse = parseString(response "\n")
 
          if( pcreMatchp( "^fatal" car(responseParse)) || pcreMatchp( "^error" car(responseParse))  then
-            Error(gs sprintf(nil "Git command returned fatal:\n%s" response))
+            ErrorCG(gs sprintf(nil "Git command returned fatal:\n%s" response))
          )
       )
    )
@@ -967,7 +967,7 @@ let( (path)
    path = gs->path
 
    if( !branchname then
-      Error(gs "GitShell Log: branchname cannot be nil")
+      ErrorCG(gs "GitShell Log: branchname cannot be nil")
    )
 
    if(gs->verbose printf("LCBUgitRevs: Reading git log\n"))
@@ -977,7 +977,7 @@ let( (path)
    response = Cmd(gs gitLogCmd)
 
    if( response=="" || !response
-      Error(gs sprintf(nil "Path %s has an empty git log\nDo revisions of it exist in the repository?" gs->path))
+      ErrorCG(gs sprintf(nil "Path %s has an empty git log\nDo revisions of it exist in the repository?" gs->path))
    )
 
    lineList = parseString(response "\n")
@@ -995,7 +995,7 @@ let( (path)
 
             
             if(logCount > 0 then
-               gitLog = Strip(GSstr(gitLog))
+               gitLog = StripCG(GSstr(gitLog))
                revList = cons(list(gitCommit gitAuthor gitDate gitLog) revList)
             )
 
@@ -1090,7 +1090,7 @@ defmethod( Status (( gs GitShell ) @key (showInfo t) )
    response = Cmd(gs status_cmd)
 
    if(!response then
-      Error(gs sprintf(nil "git status on path %s failed" gs->path))
+      ErrorCG(gs sprintf(nil "git status on path %s failed" gs->path))
    )
 
    if(response=="" then
@@ -1148,7 +1148,7 @@ let( (path)
    foreach( gsp gs->paths
 
       
-      gsp_tmp = Clone(gsp)
+      gsp_tmp = CloneCG(gsp)
 
       trim_depth  = gs->filter - (3 - gsp_tmp->pathDepth)
 
@@ -1224,10 +1224,10 @@ defmethod( Root (( gs GitShell ))
    result=Cmd(gs syscmd)
 
    if(!result then
-      Error(gs sprintf(nil "Not a valid path %s\nCommand:%s" oppath syscmd))
+      ErrorCG(gs sprintf(nil "Not a valid path %s\nCommand:%s" oppath syscmd))
    else
       gss_result=GSpath(result)
-      Strip(gss_result)
+      StripCG(gss_result)
       gs->root = gss_result
    )
 
@@ -1258,7 +1258,7 @@ defmethod( Commit (( gs GitShell ) commit_log @key (merge nil) )
          result=Cmd(gs syscmd)
 
          if(!result then
-            Error(gs sprintf(nil "Not a valid path %s\nCommand:%s" gs->path syscmd))
+            ErrorCG(gs sprintf(nil "Not a valid path %s\nCommand:%s" gs->path syscmd))
          )
       )
    else
@@ -1278,19 +1278,19 @@ defmethod( CloneRepo (( gs GitShell ))
          result=Cmd(gs syscmd)
 
          if(!result then
-            Error(gs sprintf(nil "Not a valid url %s\nCommand:%s" gs->url syscmd))
+            ErrorCG(gs sprintf(nil "Not a valid url %s\nCommand:%s" gs->url syscmd))
          else
 
             badresult = car( parseString(result) ) == "fatal:"
 
             if(badresult then
-               Error(gs sprintf(nil "Clone Failed!\n URL\n  %s\nDestination\n  %s\nResponse\n  %s" gs->url gs->path response) )
+               ErrorCG(gs sprintf(nil "Clone Failed!\n URL\n  %s\nDestination\n  %s\nResponse\n  %s" gs->url gs->path response) )
             )
 
             Info(gs sprintf(nil "Clone Success!\n URL\n  %s\nDestination\n  %s" gs->url gs->path) )
          )
       else
-         Error(gs sprintf(nil "Please enter a URL to clone!\n %L" gs->url) )
+         ErrorCG(gs sprintf(nil "Please enter a URL to clone!\n %L" gs->url) )
       )
    )
 
@@ -1321,7 +1321,7 @@ defmethod( Branch (( gs GitShell ) @key (args "") (showCurrent t) )
    result=Cmd(gs syscmd)
 
    if(!result then
-      Error(gs sprintf(nil "Not a valid path %s\nCommand:%s" gs->root->str syscmd))
+      ErrorCG(gs sprintf(nil "Not a valid path %s\nCommand:%s" gs->root->str syscmd))
    else
 
       foreach(line parseString(result "\n")
@@ -1361,7 +1361,7 @@ defmethod( Merge (( gs GitShell ) merge_args)
       result=Cmd(gs syscmd)
 
       if(!result then
-         Error(gs sprintf(nil "Merge failed\nCommand:%s" syscmd))
+         ErrorCG(gs sprintf(nil "Merge failed\nCommand:%s" syscmd))
       )
    )
 
@@ -1373,7 +1373,7 @@ defmethod( Merge (( gs GitShell ) merge_args)
       cond(
          (rexMatchp("^warning" first_line) result = "warning")
          (rexMatchp("^error" first_line)
-            Error(gs sprintf(nil "Cannot Merge. Do you have modified files in your work tree?\n\n'git merge' returned:\n%s" result))
+            ErrorCG(gs sprintf(nil "Cannot Merge. Do you have modified files in your work tree?\n\n'git merge' returned:\n%s" result))
          )
          (t result = t)
       )
@@ -1396,7 +1396,7 @@ defmethod( Export (( gs GitShell ) gitSHA)
 
    else
 
-      Error(gs "Must select a valid SHA")
+      ErrorCG(gs "Must select a valid SHA")
 
    )
 
@@ -1415,7 +1415,7 @@ defmethod( Checkout (( gs GitShell ) gitSHA @key (oppath ".") (args nil) )
       if( gitSHA && gitSHA !="" then
          Cmd(gs strcat("cd " gs->path " && git checkout " gitSHA " -- " oppath) )
       else
-         Error(gs "GitShell Checkout: Must select a valid SHA")
+         ErrorCG(gs "GitShell Checkout: Must select a valid SHA")
       )
    )
 
@@ -1429,7 +1429,7 @@ defmethod( CheckFormat (( gs GitShell ) refname)
       response = Cmd(gs strcat("git check-ref-format --branch \"" refname "\"") )
 
    else
-      Error(gs "GitShell CheckFormat: refname must be a string")
+      ErrorCG(gs "GitShell CheckFormat: refname must be a string")
    )
    response
 
@@ -1443,7 +1443,7 @@ defmethod( Init (( gs GitShell ) @key (args "") )
 
    if( !gs->path || !isDir(gs->path) then
       break()
-      Error(gs sprintf(nil "GitShell Init: %L is not a directory" gs->path) )
+      ErrorCG(gs sprintf(nil "GitShell Init: %L is not a directory" gs->path) )
    )
 
    syscmd = strcat("cd " gs->path " && git init " args)
@@ -1459,7 +1459,7 @@ defmethod( Push (( gs GitShell ) @key (remote "origin") (args ""))
    result=Cmd(gs syscmd)
 
    if(!result then
-      Error(gs sprintf(nil "Push failed\nCommand:%s\nResponse%s" syscmd result))
+      ErrorCG(gs sprintf(nil "Push failed\nCommand:%s\nResponse%s" syscmd result))
    else
       Info(gs result)
    )
@@ -1475,7 +1475,7 @@ defmethod( Pull (( gs GitShell ) @key (remote "origin") (args ""))
    result=Cmd(gs syscmd)
 
    if(!result then
-      Error(gs sprintf(nil "Pull failed\nCommand:%s\nResponse%s" syscmd result))
+      ErrorCG(gs sprintf(nil "Pull failed\nCommand:%s\nResponse%s" syscmd result))
    else
       Info(gs result)
    )
@@ -1488,7 +1488,7 @@ defmethod( Fetch (( gs GitShell ) @key (remote "origin") (args ""))
    result=Cmd(gs syscmd)
 
    if(!result then
-      Error(gs sprintf(nil "Fetch failed\nCommand:%s\nResponse%s" syscmd result))
+      ErrorCG(gs sprintf(nil "Fetch failed\nCommand:%s\nResponse%s" syscmd result))
    else
       if( result == "" then
          Info(gs "Fetch Complete (nothing to fetch)")
@@ -1507,19 +1507,19 @@ defmethod( Reset (( gs GitShell ) oppath)
       result=Cmd(gs syscmd)
 
       if(!reset then
-         Error(gs sprintf(nil "Not a valid path %s\nCommand:%s" oppath syscmd))
+         ErrorCG(gs sprintf(nil "Not a valid path %s\nCommand:%s" oppath syscmd))
       )
    )
    t
 )
-defmethod( Add (( gs GitShell ) oppath)
+defmethod( AddCG (( gs GitShell ) oppath)
 
    if( oppath && oppath != "" then
       syscmd = strcat("cd " gs->root->str " && git add --all -- " oppath)
       result=Cmd(gs syscmd)
 
       if(!result then
-         Error(gs sprintf(nil "Not a valid path %s\nCommand:%s" oppath syscmd))
+         ErrorCG(gs sprintf(nil "Not a valid path %s\nCommand:%s" oppath syscmd))
       )
    )
 
@@ -1627,8 +1627,8 @@ defmethod( Check (( ge GitEnv ))
    
    foreach( envVar envVars
 
-      defaultValue = Get(ge envVar ?forcedPath ge->global_path)
-      setValue     = Get(ge envVar)
+      defaultValue = GetCG(ge envVar ?forcedPath ge->global_path)
+      setValue     = GetCG(ge envVar)
 
       if( defaultValue != setValue then
          mismatchString = strcat( mismatchString "\n" envVar " " setValue)
@@ -1673,7 +1673,7 @@ defmethod( GetAll (( ge GitEnv ) settingsPath)
 
    if( ge->verbose printf("GitEnv GetAll: Getting all variables from %s\n" settingsPath) )
 
-   envString = Open(ge settingsPath)
+   envString = OpenCG(ge settingsPath)
 
    ge->varList = Parse(ge envString)
 
@@ -1684,7 +1684,7 @@ defmethod( GetAll (( ge GitEnv ) settingsPath)
 
 
 
-defmethod( Get (( ge GitEnv ) varName @key (forcedPath nil))
+defmethod( GetCG (( ge GitEnv ) varName @key (forcedPath nil))
 
    if( ge->verbose printf("========GitEnv Git============\n"))
 
@@ -1693,19 +1693,19 @@ defmethod( Get (( ge GitEnv ) varName @key (forcedPath nil))
    if(forcedPath then
       if( ge->verbose printf(strcat("GitEnv Git: Getting variable " varName " from forcedPath " forcedPath "\n")))
       envList = GetAll(ge forcedPath)
-      envVar = Search(ge varName)
+      envVar = SearchCG(ge varName)
    else
 
       
       if( ge->verbose printf(strcat("GitEnv Git: Getting variable " varName " from " ge->user_path "\n")))
       envList = GetAll(ge ge->user_path)
-      varValue = Search(ge varName)
+      varValue = SearchCG(ge varName)
 
       
       if( !varValue then
          if( ge->verbose printf(strcat("GitEnv Git: Getting variable " varName " from " ge->global_path "\n")))
          envList = GetAll(ge ge->global_path)
-         envVar = Search(ge varName)
+         envVar = SearchCG(ge varName)
       )
    )
 
@@ -1841,13 +1841,13 @@ defmethod( Search (( ge GitEnv ) varName )
    returnVar
 
 )
-defmethod( Set (( ge GitEnv ) setName setValue )
+defmethod( SetCG (( ge GitEnv ) setName setValue )
 
    if( ge->verbose printf("========GitEnv Set============\n"))
 
    printf(strcat("GitEnv Set: Setting variable " setName " to " setValue " in " ge->user_path "\n"))
 
-   globalValue = Get(ge setName ?forcedPath ge->global_path)
+   globalValue = GetCG(ge setName ?forcedPath ge->global_path)
 
    
    line =  strcat(setName " = " setValue)
@@ -1869,7 +1869,7 @@ defmethod( Set (( ge GitEnv ) setName setValue )
 
    foutString = ""
 
-   envString = Open(ge ge->user_path)
+   envString = OpenCG(ge ge->user_path)
    strList = parseString(envString "\n")
 
    writeFile = nil
@@ -1936,7 +1936,7 @@ defmethod( SetShell (( ge GitEnv ) varName @key (override t) )
    if( !shellResponse || override then
 
       if( ge->verbose printf(strcat("GitEnv SetShell: Setting Shell variable " varName " to " varName "\n")))
-      varValue = Get(ge varName)
+      varValue = GetCG(ge varName)
       setShellEnvVar(strcat(varName "=" varValue))
 
       shellResponse = getShellEnvVar(varName)
@@ -2116,7 +2116,7 @@ procedure( CGMlmgrCB(_menuName lib _c _v _f _cat)
       ("CGMcommit"        CGstatusForm(gs)   )
       ("CGMexport"        CGexportForm(gs)   )
       ("CGMcheckout"      CGcheckoutForm(gs) )
-      ("CGMadd"           Add(gs gs->path)   )
+      ("CGMadd"           AddCG(gs gs->path)   )
       ("CGMreset"         Reset(gs gs->path) )
       ("CGMdiscard"       Discard(gs)        )
       
@@ -2132,7 +2132,7 @@ procedure( CGMlmgrCB(_menuName lib _c _v _f _cat)
       ("CGMrePull"        CGremoteCB(gs "pull")  )
       ("CGMreFetch"       CGremoteCB(gs "fetch") )
       
-      (t              Error( GitShell(?path "") strcat("Function " _menuName " has not been implemented yet!")  ) )
+      (t              ErrorCG( GitShell(?path "") strcat("Function " _menuName " has not been implemented yet!")  ) )
 
    )
 
@@ -2207,7 +2207,7 @@ procedure( CGmergeAbortCB(gs)
    response = Dialog(gs "Aborting Merge will cause all uncommitted changes to be lost!!\nProceed?")
 
    if( response then
-      Merge(gs "--abort")
+      MergeCG(gs "--abort")
    )
 
 )
@@ -2684,7 +2684,7 @@ procedure( CGstatusFormToggleCB()
          oppath = nthelem(3 fchoice)
 
          case(operation
-            ("add"     Add(gs oppath ) )
+            ("add"     AddCG(gs oppath ) )
             ("reset" Reset(gs oppath ) )
             (t error("invalied Toggle operation"))
          )
@@ -2937,7 +2937,7 @@ procedure( CGmergeResolveFormAddCB(option)
       oppath = nthelem(3 fchoice)
 
       Checkout(gs strcat("--" option) ?oppath oppath)
-      Add(gs oppath)
+      AddCG(gs oppath)
 
       case( option
          ("ours"   cgmergeresolve_form->rf_ours   = CGappendRFchoices(cgmergeresolve_form->rf_ours   fchoice) )
@@ -3228,7 +3228,7 @@ procedure( CGexportFormCB()
    revSelected = CGgetRFchoices(cgrevselect_form->rf_revs)
 
    if( !gs->valid then
-      Error(gs "Object is not in a valid git repository")
+      ErrorCG(gs "Object is not in a valid git repository")
    )
 
    if(revSelected then
@@ -3268,7 +3268,7 @@ procedure( CGcheckoutForm(gs)
 
    Status(gs ?showInfo nil)
    if( !gs->clean then
-      Error(gs "Cannot Checkout, you have uncommited modifications\n")
+      ErrorCG(gs "Cannot Checkout, you have uncommited modifications\n")
    )
 
    CGrevSelectForm(gs ?formTitle formTitle ?formCB formCB)
@@ -3283,7 +3283,7 @@ procedure( CGcheckoutFormCB()
    gs = cgrevselect_form->gs
 
    if( !gs->valid then
-      Error(gs "Object is not in a valid git repository")
+      ErrorCG(gs "Object is not in a valid git repository")
    )
 
    if(revSelected then
@@ -3292,7 +3292,7 @@ procedure( CGcheckoutFormCB()
 
       Status(gs ?showInfo nil)
       if( !gs->clean then
-         Error(gs "Cannot Checkout, you have uncommited modifications\n")
+         ErrorCG(gs "Cannot Checkout, you have uncommited modifications\n")
       else
          Checkout(gs gitSHA)
          Reset(gs gs->path)
@@ -3421,14 +3421,14 @@ procedure( CGBSmergeFormCB()
    if(rf_branches_value then
       src_branch = nthelem(1 rf_branches_value)
       if( gs->verbose printf("CGBSmergeFormCB: Attempting to merge %L",src_branch))
-      result = Merge(gs src_branch)
+      result = MergeCG(gs src_branch)
       if( result == "warning" then
          response = Dialog(gs "Merge failed due to conflicts\nOpen the Merge confilt resolve form?")
          if(response then
             gs->path = gs->root->str
             CGmergeResolveForm(gs)
          else
-            Error(gs "Merge failed due to unresolved conflicts")
+            ErrorCG(gs "Merge failed due to unresolved conflicts")
          )
       )
    )
@@ -3506,7 +3506,7 @@ procedure( CGBSbranchopCB(branchop)
    parent_branch = nthelem(1 rf_branches_value)
 
    if( !rf_branches_value then
-      Error(gs "You must select a Branch")
+      ErrorCG(gs "You must select a Branch")
    )
 
    if( branchop == "create" || branchop == "rename" then
@@ -3514,7 +3514,7 @@ procedure( CGBSbranchopCB(branchop)
 
       
       if( sf_bname_value == "" then
-         Error(gs "You must enter a branch name")
+         ErrorCG(gs "You must enter a branch name")
       )
 
       CheckFormat(gs sf_bname_value)
@@ -3662,7 +3662,7 @@ procedure( CGsetupSSHform()
       hiDisplayForm(cgsetupssh_form)
 
    else
-      Error(gs strcat("Could not open %s" sshKeyPath) )
+      ErrorCG(gs strcat("Could not open %s" sshKeyPath) )
    )
 
 )
@@ -3718,7 +3718,7 @@ procedure( CGpathBrowseFD(formMode)
    )
    retval=buildString(retval)
    retval=simplifyFilename(retval)
-   retval=Strip(GSstr(retval))
+   retval=StripCG(GSstr(retval))
    printf("%L\n" retval)
    cgpathbrowseform->sf_pathname->value = retval
 )
@@ -3735,7 +3735,7 @@ procedure( CGPBinitForm()
 
 procedure( CGPBinitFormCB()
 
-   gsinit_path = Strip(GSstr(cgpathbrowseform->sf_pathname->value))
+   gsinit_path = StripCG(GSstr(cgpathbrowseform->sf_pathname->value))
 
    gs = GitShell( ?path gsinit_path ?skipCheck t)
 
@@ -3745,7 +3745,7 @@ procedure( CGPBinitFormCB()
    if( gs->valid then
       Info(gs sprintf(nil "Git Repository Initialized in %s" gsinit_path))
    else
-      Error(gs sprintf(nil "Could not Initialize a Git Repository in %s\nCheck that you have permissions" gsinit_path))
+      ErrorCG(gs sprintf(nil "Could not Initialize a Git Repository in %s\nCheck that you have permissions" gsinit_path))
    )
 
 )
@@ -5299,7 +5299,7 @@ defmethod( ChangeState (( diff GMdiff ) )
       else
          if( diff->isDst? then
             ChangeChildrenState(diff)
-            Destroy(diff)
+            DestroyCG(diff)
          else
             Create(diff)
             ChangeChildrenState(diff)
@@ -5316,7 +5316,7 @@ defmethod( ChangeState (( diff GMdiff ) )
             ChangeChildrenState(diff)
          else
             ChangeChildrenState(diff)
-            Destroy(diff)
+            DestroyCG(diff)
          )
       )
    )
@@ -5663,7 +5663,7 @@ defmethod( GetParentObj (( inst GMobj) )
 
 )
 
-defmethod( Destroy (( inst GMobj )  )
+defmethod( DestroyCG (( inst GMobj )  )
 
    if( inst->isDst? then
       StoreAttrs(inst)

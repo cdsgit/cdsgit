@@ -10,7 +10,7 @@ defclass( GitRepo
 procedure( GitRepo(gs)
 
    if( !gs->root then
-      Error(gs "No root directory found for git-shell")
+      ErrorCG(gs "No root directory found for git-shell")
    )
 
    gr = makeInstance( 'GitRepo ?root gs->root)

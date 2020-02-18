@@ -16,8 +16,8 @@ defmethod( Check (( ge GitEnv ))
    ;Loop through each variable and check it's state
    foreach( envVar envVars
 
-      defaultValue = Get(ge envVar ?forcedPath ge->global_path)
-      setValue     = Get(ge envVar)
+      defaultValue = GetCG(ge envVar ?forcedPath ge->global_path)
+      setValue     = GetCG(ge envVar)
 
       if( defaultValue != setValue then
          mismatchString = strcat( mismatchString "\n" envVar " " setValue)
